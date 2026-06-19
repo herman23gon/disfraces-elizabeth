@@ -39,7 +39,13 @@
                         <label class="block font-semibold mb-1">Talla</label>
                         <input type="text" name="talla" value="{{ old('talla') }}" class="w-full border rounded p-2">
                     </div>
-
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Cantidad de piezas</label>
+                        <input type="number" name="cantidad_piezas" value="{{ old('cantidad_piezas', 1) }}" class="w-full border rounded p-2">
+                        @error('cantidad_piezas')
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <div class="mb-4">
                         <label class="block font-semibold mb-1">Descripción</label>
                         <textarea name="descripcion" class="w-full border rounded p-2">{{ old('descripcion') }}</textarea>

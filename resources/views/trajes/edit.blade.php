@@ -41,6 +41,14 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="block font-semibold mb-1">Cantidad de piezas</label>
+                        <input type="number" name="cantidad_piezas" value="{{ old('cantidad_piezas', $traje->cantidad_piezas) }}" class="w-full border rounded p-2">
+                        @error('cantidad_piezas')
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
                         <label class="block font-semibold mb-1">Descripción</label>
                         <textarea name="descripcion" class="w-full border rounded p-2">{{ old('descripcion', $traje->descripcion) }}</textarea>
                     </div>
@@ -49,4 +57,25 @@
                         <label class="block font-semibold mb-1">Cantidad disponible</label>
                         <input type="number" name="cantidad_disponible" value="{{ old('cantidad_disponible', $traje->cantidad_disponible) }}" class="w-full border rounded p-2">
                         @error('cantidad_disponible')
-                            <p
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Precio de referencia (Bs.)</label>
+                        <input type="number" step="0.01" name="precio_referencia" value="{{ old('precio_referencia', $traje->precio_referencia) }}" class="w-full border rounded p-2">
+                        @error('precio_referencia')
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                        Actualizar
+                    </button>
+                    <a href="{{ route('trajes.index') }}" class="ml-2 text-gray-600">Cancelar</a>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</x-app-layout>

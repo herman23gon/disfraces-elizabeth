@@ -25,6 +25,7 @@
                             <th class="p-2 text-left">Nombre</th>
                             <th class="p-2 text-left">Categoría</th>
                             <th class="p-2 text-left">Talla</th>
+                            <th class="p-2 text-left">Piezas</th>
                             <th class="p-2 text-left">Disponibles</th>
                             <th class="p-2 text-left">Precio Ref.</th>
                             <th class="p-2 text-left">Estado</th>
@@ -37,6 +38,7 @@
                                 <td class="p-2">{{ $traje->nombre }}</td>
                                 <td class="p-2">{{ $traje->categoria->nombre }}</td>
                                 <td class="p-2">{{ $traje->talla }}</td>
+                                <td class="p-2">{{ $traje->cantidad_piezas }}</td>
                                 <td class="p-2">{{ $traje->cantidad_disponible }}</td>
                                 <td class="p-2">Bs. {{ $traje->precio_referencia }}</td>
                                 <td class="p-2">{{ $traje->estado ? 'Activo' : 'Inactivo' }}</td>

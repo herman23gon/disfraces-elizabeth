@@ -13,6 +13,7 @@ class Traje extends Model
         'categoria_id',
         'nombre',
         'talla',
+        'cantidad_piezas',
         'descripcion',
         'cantidad_disponible',
         'precio_referencia',

@@ -12,19 +12,20 @@ class Alquiler extends Model
     protected $table = 'alquileres';
 
     protected $fillable = [
-        'numero_recibo',
-        'cliente_id',
-        'usuario_id',
-        'nombre_usuario_traje',
-        'estado_traje_entrega',
-        'colegio_direccion',
-        'curso',
-        'turno',
-        'fecha_alquiler',
-        'fecha_devolucion_programada',
-        'total',
-        'estado',
-    ];
+    'numero_recibo',
+    'cliente_id',
+    'usuario_id',
+    'nombre_usuario_traje',
+    'estado_traje_entrega',
+    'colegio_direccion',
+    'curso',
+    'turno',
+    'fecha_alquiler',
+    'fecha_devolucion_programada',
+    'total',
+    'forma_pago',
+    'estado',
+];
 
     public function cliente()
     {

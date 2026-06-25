@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TrajeController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\AlquilerController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('clientes', ClienteController::class);
     Route::resource('categorias', CategoriaController::class);
     Route::resource('trajes', TrajeController::class);
+    Route::resource('alquileres', AlquilerController::class);
 });
 
 require __DIR__.'/auth.php';

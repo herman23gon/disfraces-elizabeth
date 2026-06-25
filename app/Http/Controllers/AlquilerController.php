@@ -59,6 +59,16 @@ class AlquilerController extends Controller
         foreach ($request->trajes as $item) {
             $total += $item['cantidad'] * $item['precio_unitario'];
         }
+        // Validar que haya stock suficiente para cada traje solicitado
+        foreach ($request->trajes as $item) {
+            $traje = Traje::find($item['traje_id']);
+
+            if ($traje->cantidad_disponible < $item['cantidad']) {
+                return back()->withErrors([
+                    'trajes' => "No hay suficiente stock de \"{$traje->nombre}\". Disponible: {$traje->cantidad_disponible}, solicitado: {$item['cantidad']}."
+                ])->withInput();
+            }
+        }
 
         // Generar número de recibo automático
         $ultimoAlquiler = Alquiler::orderBy('id', 'desc')->first();

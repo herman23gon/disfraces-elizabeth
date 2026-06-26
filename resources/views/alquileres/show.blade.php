@@ -89,7 +89,10 @@
                         </div>
                     </div>
                 </div>
-
+                <a href="{{ route('alquileres.recibo', $alquiler->id) }}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded inline-block mb-4">
+                    🖨️ Imprimir Recibo
+                </a>
+                <br>
                 <a href="{{ route('alquileres.index') }}" class="text-gray-600">← Volver a la lista</a>
             </div>
         </div>

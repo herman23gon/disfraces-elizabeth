@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('clientes', ClienteController::class);
     Route::resource('categorias', CategoriaController::class);
     Route::resource('trajes', TrajeController::class);
+    Route::get('/alquileres/{id}/recibo', [AlquilerController::class, 'recibo'])->name('alquileres.recibo');
     Route::resource('alquileres', AlquilerController::class);
 });
 

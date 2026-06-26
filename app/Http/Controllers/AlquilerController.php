@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Alquiler;
 use App\Models\Cliente;
 use App\Models\Traje;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AlquilerController extends Controller
 {
@@ -131,7 +132,18 @@ class AlquilerController extends Controller
         $alquiler = Alquiler::with(['cliente', 'detalles.traje', 'garantias'])->findOrFail($id);
         return view('alquileres.show', compact('alquiler'));
     }
+    /**
+     * Generar el recibo en PDF
+     */
+    public function recibo(string $id)
+    {
+        $alquiler = Alquiler::with(['cliente', 'usuario', 'detalles.traje', 'garantias'])->findOrFail($id);
 
+        $pdf = Pdf::loadView('alquileres.recibo_pdf', compact('alquiler'))
+            ->setPaper([0, 0, 226.77, 600], 'portrait');
+
+        return $pdf->stream('recibo-' . $alquiler->numero_recibo . '.pdf');
+    }
     /**
      * Show the form for editing the specified resource.
      */

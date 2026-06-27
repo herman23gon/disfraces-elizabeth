@@ -37,7 +37,14 @@
                                 <td class="p-2">{{ $alquiler->numero_recibo }}</td>
                                 <td class="p-2">{{ $alquiler->cliente->nombre }}</td>
                                 <td class="p-2">{{ $alquiler->fecha_alquiler }}</td>
-                                <td class="p-2">{{ $alquiler->fecha_devolucion_programada }}</td>
+                                <td class="p-2">
+                                    @php
+                                        $atrasado = $alquiler->estado == 'activo' && \Carbon\Carbon::parse($alquiler->fecha_devolucion_programada)->isPast();
+                                    @endphp
+                                    <span class="{{ $atrasado ? 'text-red-600 font-bold' : '' }}">
+                                        {{ $alquiler->fecha_devolucion_programada }}
+                                    </span>
+                                </td>
                                 <td class="p-2">Bs. {{ number_format($alquiler->total, 2) }}</td>
                                 <td class="p-2">
                                     @if($alquiler->estado == 'activo')

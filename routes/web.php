@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\TrajeController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\AlquilerController;
+use App\Http\Controllers\DevolucionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -34,7 +35,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('categorias', CategoriaController::class);
     Route::resource('trajes', TrajeController::class);
     Route::get('/alquileres/{id}/recibo', [AlquilerController::class, 'recibo'])->name('alquileres.recibo');
+    Route::get('/alquileres/{id}/devolucion', [DevolucionController::class, 'create'])->name('devoluciones.create');
+    Route::post('/alquileres/{id}/devolucion', [DevolucionController::class, 'store'])->name('devoluciones.store');
     Route::resource('alquileres', AlquilerController::class);
+    
+    
 });
 
 require __DIR__.'/auth.php';

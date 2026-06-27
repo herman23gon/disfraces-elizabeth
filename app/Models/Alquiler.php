@@ -46,4 +46,8 @@ class Alquiler extends Model
     {
         return $this->hasMany(Garantia::class);
     }
+    public function devolucion()
+    {
+        return $this->hasOne(Devolucion::class);
+    }
 }

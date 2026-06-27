@@ -92,6 +92,25 @@
                 <a href="{{ route('alquileres.recibo', $alquiler->id) }}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded inline-block mb-4">
                     🖨️ Imprimir Recibo
                 </a>
+                @if ($alquiler->estado == 'activo')
+                <a href="{{ route('devoluciones.create', $alquiler->id) }}" class="bg-orange-600 text-white px-4 py-2 rounded inline-block mb-4 ml-2">
+                    📦 Registrar Devolución
+                </a>
+                @endif
+                @if ($alquiler->estado == 'devuelto' && $alquiler->devolucion)
+                <div class="border-t pt-4 mt-4">
+                    <h3 class="font-bold text-lg mb-3 text-green-700">✅ Devolución Registrada</h3>
+                    <table class="w-full mb-4 text-sm border">
+                        <tr><td class="font-semibold p-2">Fecha de devolución:</td><td class="p-2">{{ $alquiler->devolucion->fecha_devolucion }}</td></tr>
+                        <tr><td class="font-semibold p-2">Recibido por:</td><td class="p-2">{{ $alquiler->devolucion->usuario->name }}</td></tr>
+                        <tr><td class="font-semibold p-2">Observaciones:</td><td class="p-2">{{ $alquiler->devolucion->observaciones ?? '-' }}</td></tr>
+                        @if ($alquiler->devolucion->penalidad > 0)
+                        <tr><td class="font-semibold p-2">Penalidad cobrada:</td><td class="p-2">Bs. {{ number_format($alquiler->devolucion->penalidad, 2) }}</td></tr>
+                        <tr><td class="font-semibold p-2">Forma de pago penalidad:</td><td class="p-2">{{ $alquiler->devolucion->forma_pago_penalidad }}</td></tr>
+                        @endif
+                    </table>
+                </div>
+                @endif
                 <br>
                 <a href="{{ route('alquileres.index') }}" class="text-gray-600">← Volver a la lista</a>
             </div>

@@ -52,7 +52,7 @@ class AlquilerController extends Controller
             'garantias.*.tipo_garantia' => 'required_with:garantias|string',
             'garantias.*.cantidad' => 'nullable|integer|min:1',
             'garantias.*.monto' => 'nullable|numeric|min:0',
-            'forma_pago' => 'required|in:Efectivo,QR,Mixto',
+            'forma_pago' => 'required|in:Efectivo,QR',
         ]);
 
         // Calcular el total sumando todos los subtotales

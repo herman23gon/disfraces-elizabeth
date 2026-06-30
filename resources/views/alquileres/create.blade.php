@@ -60,7 +60,6 @@
                         <select name="forma_pago" class="w-full border rounded p-2">
                             <option value="Efectivo">Efectivo</option>
                             <option value="QR">Pago QR</option>
-                            <option value="Mixto">Mixto (Efectivo + QR)</option>
                         </select>
                         @error('forma_pago')
                             <p class="text-red-600 text-sm">{{ $message }}</p>

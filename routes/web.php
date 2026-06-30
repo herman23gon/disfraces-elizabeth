@@ -7,6 +7,7 @@ use App\Http\Controllers\TrajeController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\AlquilerController;
 use App\Http\Controllers\DevolucionController;
+use App\Http\Controllers\ReporteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -39,7 +40,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/alquileres/{id}/devolucion', [DevolucionController::class, 'store'])->name('devoluciones.store');
     Route::resource('alquileres', AlquilerController::class);
     
-    
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/alquileres-periodo', [ReporteController::class, 'alquileresPorPeriodo'])->name('reportes.alquileres-periodo');
+    Route::get('/reportes/ingresos-mensuales', [ReporteController::class, 'ingresosMensuales'])->name('reportes.ingresos-mensuales');
+    Route::get('/reportes/vencidos', [ReporteController::class, 'vencidos'])->name('reportes.vencidos');
 });
 
 require __DIR__.'/auth.php';

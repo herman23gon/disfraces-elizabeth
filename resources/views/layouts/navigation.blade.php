@@ -10,12 +10,26 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
+              <!-- Navigation Links -->
+            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    Dashboard
+                </x-nav-link>
+                <x-nav-link :href="route('categorias.index')" :active="request()->routeIs('categorias.*')">
+                    Categorías
+                </x-nav-link>
+                <x-nav-link :href="route('trajes.index')" :active="request()->routeIs('trajes.*')">
+                    Trajes
+                </x-nav-link>
+                <x-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
+                    Clientes
+                </x-nav-link>
+                <x-nav-link :href="route('alquileres.index')" :active="request()->routeIs('alquileres.*')">
+                    Alquileres
+                </x-nav-link>
+                <x-nav-link :href="route('reportes.index')" :active="request()->routeIs('reportes.*')">
+                    Reportes
+                </x-nav-link>
             </div>
 
             <!-- Settings Dropdown -->
@@ -68,7 +82,22 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                Dashboard
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('categorias.index')" :active="request()->routeIs('categorias.*')">
+                Categorías
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('trajes.index')" :active="request()->routeIs('trajes.*')">
+                Trajes
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
+                Clientes
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('alquileres.index')" :active="request()->routeIs('alquileres.*')">
+                Alquileres
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reportes.index')" :active="request()->routeIs('reportes.*')">
+                Reportes
             </x-responsive-nav-link>
         </div>
 

@@ -27,9 +27,16 @@
                 <x-nav-link :href="route('alquileres.index')" :active="request()->routeIs('alquileres.*')">
                     Alquileres
                 </x-nav-link>
+                @role('administrador')
                 <x-nav-link :href="route('reportes.index')" :active="request()->routeIs('reportes.*')">
                     Reportes
                 </x-nav-link>
+                @endrole
+                @role('administrador')
+                <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                    Usuarios
+                </x-nav-link>
+                @endrole
             </div>
 
             <!-- Settings Dropdown -->
@@ -96,9 +103,16 @@
             <x-responsive-nav-link :href="route('alquileres.index')" :active="request()->routeIs('alquileres.*')">
                 Alquileres
             </x-responsive-nav-link>
+            @role('administrador')
             <x-responsive-nav-link :href="route('reportes.index')" :active="request()->routeIs('reportes.*')">
                 Reportes
             </x-responsive-nav-link>
+            @endrole
+            @role('administrador')
+            <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                Usuarios
+            </x-responsive-nav-link>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->

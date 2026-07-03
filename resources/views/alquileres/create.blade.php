@@ -1,4 +1,22 @@
 <x-app-layout>
+    {{-- Select2 CSS cargado localmente --}}
+ <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+        <style>
+            .select2-container--default .select2-selection--single {
+                border: 1px solid #d1d5db;
+                border-radius: 0.25rem;
+                height: 42px;
+                padding: 0.5rem;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                line-height: 24px;
+                color: #374151;
+                padding-left: 0;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 40px;
+            }
+        </style>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Nuevo Alquiler
@@ -17,8 +35,8 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block font-semibold mb-1">Cliente (Responsable)</label>
-                            <select name="cliente_id" class="w-full border rounded p-2">
-                                <option value="">-- Seleccione --</option>
+                            <select name="cliente_id" id="select-cliente" class="w-full border rounded p-2">
+                                <option value="">-- Buscar cliente --</option>
                                 @foreach ($clientes as $cliente)
                                     <option value="{{ $cliente->id }}">{{ $cliente->nombre }} - {{ $cliente->telefono }}</option>
                                 @endforeach
@@ -210,5 +228,17 @@
 
         // Agregar automáticamente un traje al cargar la página
         agregarTraje();
+    </script>
+            {{-- jQuery y Select2 cargados localmente --}}
+        <script src="{{ asset('js/jquery.min.js') }}"></script>
+        <script src="{{ asset('js/select2.min.js') }}"></script>
+        <script>
+            $(document).ready(function() {
+                $('#select-cliente').select2({
+                    placeholder: 'Escriba nombre o teléfono...',
+                    allowClear: true,
+                    width: '100%'
+                });
+            });
     </script>
 </x-app-layout>

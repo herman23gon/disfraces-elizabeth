@@ -22,8 +22,8 @@
                     <tr><td class="font-semibold p-1">Usa el traje:</td><td>{{ $alquiler->nombre_usuario_traje }}</td></tr>
                     <tr><td class="font-semibold p-1">Colegio/Dirección:</td><td>{{ $alquiler->colegio_direccion }}</td></tr>
                     <tr><td class="font-semibold p-1">Curso / Turno:</td><td>{{ $alquiler->curso }} / {{ $alquiler->turno }}</td></tr>
-                    <tr><td class="font-semibold p-1">Fecha alquiler:</td><td>{{ $alquiler->fecha_alquiler }}</td></tr>
-                    <tr><td class="font-semibold p-1">Fecha devolución:</td><td>{{ $alquiler->fecha_devolucion_programada }}</td></tr>
+                    <tr><td class="font-semibold p-1">Fecha alquiler:</td><td class="p-2">{{ $alquiler->fecha_alquiler_formateada }}</td></tr>
+                    <tr><td class="font-semibold p-1">Fecha devolución:</td><td>{{ $alquiler->fecha_devolucion_programada_formateada }}</td></tr>
                     <tr><td class="font-semibold p-1">Estado:</td><td>{{ $alquiler->estado }}</td></tr>
                     <tr><td class="font-semibold p-1">Forma de pago:</td><td>{{ $alquiler->forma_pago }}</td></tr>
                 </table>
@@ -101,7 +101,7 @@
                 <div class="border-t pt-4 mt-4">
                     <h3 class="font-bold text-lg mb-3 text-green-700">✅ Devolución Registrada</h3>
                     <table class="w-full mb-4 text-sm border">
-                        <tr><td class="font-semibold p-2">Fecha de devolución:</td><td class="p-2">{{ $alquiler->devolucion->fecha_devolucion }}</td></tr>
+                        <tr><td class="font-semibold p-2">Fecha de devolución:</td><td class="p-2">{{ $alquiler->devolucion->fecha_devolucion_formateada }}</td></tr>
                         <tr><td class="font-semibold p-2">Recibido por:</td><td class="p-2">{{ $alquiler->devolucion->usuario->name }}</td></tr>
                         <tr><td class="font-semibold p-2">Observaciones:</td><td class="p-2">{{ $alquiler->devolucion->observaciones ?? '-' }}</td></tr>
                         @if ($alquiler->devolucion->penalidad > 0)

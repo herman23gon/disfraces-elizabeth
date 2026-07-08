@@ -39,7 +39,7 @@
                                     <a href="{{ route('alquileres.show', $alquiler->id) }}" class="text-blue-600">{{ $alquiler->numero_recibo }}</a>
                                 </td>
                                 <td class="p-2">{{ $alquiler->cliente->nombre }}</td>
-                                <td class="p-2">{{ $alquiler->fecha_alquiler }}</td>
+                                <td class="p-2">{{ $alquiler->fecha_alquiler_formateada }}</td>
                                 <td class="p-2">{{ $alquiler->forma_pago }}</td>
                                 <td class="p-2">Bs. {{ number_format($alquiler->total, 2) }}</td>
                                 <td class="p-2">{{ $alquiler->estado }}</td>

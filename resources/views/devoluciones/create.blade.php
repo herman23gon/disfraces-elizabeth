@@ -12,8 +12,8 @@
                 <h3 class="font-bold text-lg mb-3">Resumen del Alquiler</h3>
                 <table class="w-full mb-6 text-sm border">
                     <tr><td class="font-semibold p-2">Cliente:</td><td class="p-2">{{ $alquiler->cliente->nombre }}</td></tr>
-                    <tr><td class="font-semibold p-2">Fecha alquiler:</td><td class="p-2">{{ $alquiler->fecha_alquiler }}</td></tr>
-                    <tr><td class="font-semibold p-2">Fecha devolución programada:</td><td class="p-2">{{ $alquiler->fecha_devolucion_programada }}</td></tr>
+                    <tr><td class="font-semibold p-2">Fecha alquiler:</td><td class="p-2">{{ $alquiler->fecha_alquiler_formateada }}</td></tr>
+                    <tr><td class="font-semibold p-2">Fecha devolución programada:</td><td class="p-2">{{ $alquiler->fecha_devolucion_programada_formateada }}</td></tr>
                 </table>
 
                 <h3 class="font-bold text-lg mb-3">Trajes a devolver</h3>

@@ -62,7 +62,7 @@
     <table class="info-table">
         <tr>
             <td class="label">Fecha:</td>
-            <td class="value">{{ $alquiler->fecha_alquiler }}</td>
+            <td class="value">{{ $alquiler->fecha_alquiler_formateada }}</td>
         </tr>
         <tr>
             <td class="label">Atendido por:</td>
@@ -131,7 +131,7 @@
     <table class="info-table">
         <tr>
             <td class="label">Fecha devolución:</td>
-            <td class="value">{{ $alquiler->fecha_devolucion_programada }}</td>
+            <td class="value">{{ $alquiler->fecha_devolucion_programada_formateada }}</td>
         </tr>
     </table>
 

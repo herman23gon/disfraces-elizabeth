@@ -50,4 +50,13 @@ class Alquiler extends Model
     {
         return $this->hasOne(Devolucion::class);
     }
+    public function getFechaAlquilerFormateadaAttribute()
+    {
+        return \Carbon\Carbon::parse($this->fecha_alquiler)->format('d/m/Y'); // convierte a dd/mm/yyyy
+    }
+
+    public function getFechaDevolucionProgramadaFormateadaAttribute()
+    {
+        return \Carbon\Carbon::parse($this->fecha_devolucion_programada)->format('d/m/Y'); // convierte a dd/mm/yyyy
+    }
 }

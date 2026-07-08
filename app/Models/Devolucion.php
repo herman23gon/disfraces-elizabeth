@@ -29,4 +29,8 @@ class Devolucion extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function getFechaDevolucionFormateadaAttribute()
+    {
+        return \Carbon\Carbon::parse($this->fecha_devolucion)->format('d/m/Y'); // convierte a dd/mm/yyyy
+    }
 }

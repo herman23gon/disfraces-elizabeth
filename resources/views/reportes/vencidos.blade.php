@@ -32,9 +32,9 @@
                                 </td>
                                 <td class="p-2">{{ $alquiler->cliente->nombre }}</td>
                                 <td class="p-2">{{ $alquiler->cliente->telefono }}</td>
-                                <td class="p-2">{{ $alquiler->fecha_alquiler }}</td>
+                                <td class="p-2">{{ $alquiler->fecha_alquiler_formateada }}</td>
                                 <td class="p-2 {{ $atrasado ? 'text-red-600 font-bold' : '' }}">
-                                    {{ $alquiler->fecha_devolucion_programada }}
+                                    {{ $alquiler->fecha_devolucion_programada_formateada }}
                                 </td>
                                 <td class="p-2">
                                     @if($atrasado)

@@ -14,6 +14,11 @@
                         {{ session('success') }}
                     </div>
                 @endif
+                @if (session('error'))
+                    <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
                 <a href="{{ route('trajes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
                     + Nuevo Traje

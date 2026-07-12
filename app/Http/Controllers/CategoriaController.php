@@ -78,9 +78,13 @@ class CategoriaController extends Controller
      */
     public function destroy(string $id)
     {
-        $categoria = Categoria::findOrFail($id);
-        $categoria->delete();
+         $categoria = Categoria::findOrFail($id);
 
-        return redirect()->route('categorias.index')->with('success', 'Categoría eliminada correctamente.');
+        try {
+               $categoria->delete();
+            return redirect()->route('categorias.index')->with('success', 'Categoría eliminada correctamente.');
+             } catch (\Exception $e) {
+              return redirect()->route('categorias.index')->with('error', 'No se puede eliminar esta categoría porque tiene trajes asociados.');
+            }
     }
 }

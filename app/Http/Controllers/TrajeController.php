@@ -89,10 +89,14 @@ class TrajeController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        $traje = Traje::findOrFail($id);
-        $traje->delete();
+        {
+            $traje = Traje::findOrFail($id); // busca el traje por id
 
-        return redirect()->route('trajes.index')->with('success', 'Traje eliminado correctamente.');
-    }
+            try {
+                $traje->delete(); // elimina el traje
+                return redirect()->route('trajes.index')->with('success', 'Traje eliminado correctamente.');
+            } catch (\Exception $e) {
+                return redirect()->route('trajes.index')->with('error', 'No se puede eliminar este traje porque tiene alquileres registrados.');
+            }
+        }
 }

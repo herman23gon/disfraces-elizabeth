@@ -30,9 +30,11 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-        ]);
+    'nombre' => 'required|string|max:255',
+    'telefono' => 'nullable|string|max:20|unique:clientes,telefono',
+    ], [
+        'telefono.unique' => 'Ya existe un cliente registrado con este número de teléfono.',
+    ]);
 
         Cliente::create($request->all());
 

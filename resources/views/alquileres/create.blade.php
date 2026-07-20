@@ -1,4 +1,7 @@
 <x-app-layout>
+    {{-- jQuery y Select2 cargados localmente --}}
+        <script src="{{ asset('js/jquery.min.js') }}"></script>
+        <script src="{{ asset('js/select2.min.js') }}"></script>
     {{-- Select2 CSS cargado localmente --}}
  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
         <style>
@@ -152,7 +155,7 @@
                     <div class="grid grid-cols-12 gap-2 items-end">
                         <div class="col-span-4">
                             <label class="text-sm font-semibold">Traje</label>
-                            <select name="trajes[${id}][traje_id]" class="w-full border rounded p-2 text-sm" onchange="actualizarPrecio(${id}, this)">
+                            <select name="trajes[${id}][traje_id]" id="select-traje-${id}" class="w-full border rounded p-2 text-sm" onchange="actualizarPrecio(${id}, this)">
                                 <option value="">-- Seleccione --</option>
                                 ${opciones}
                             </select>
@@ -180,6 +183,13 @@
                 </div>
             `;
             document.getElementById('contenedor-trajes').insertAdjacentHTML('beforeend', html);
+        setTimeout(() => {
+                            $(`#select-traje-${id}`).select2({
+                                placeholder: 'Buscar traje...',
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        }, 100);
         }
 
         function actualizarPrecio(id, select) {
@@ -228,10 +238,8 @@
 
         // Agregar automáticamente un traje al cargar la página
         agregarTraje();
-    </script>
-            {{-- jQuery y Select2 cargados localmente --}}
-        <script src="{{ asset('js/jquery.min.js') }}"></script>
-        <script src="{{ asset('js/select2.min.js') }}"></script>
+       </script>
+
         <script>
             $(document).ready(function() {
                 $('#select-cliente').select2({

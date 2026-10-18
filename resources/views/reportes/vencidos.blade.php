@@ -44,7 +44,9 @@
                                     @endif
                                 </td>
                                 <td class="p-2">
+                                    @can('alquileres.editar')
                                     <a href="{{ route('devoluciones.create', $alquiler->id) }}" class="text-orange-600">Devolver</a>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty

@@ -8,6 +8,14 @@ use App\Models\Categoria;
 
 class TrajeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:trajes.ver')->only(['index', 'show']);
+        $this->middleware('permission:trajes.crear')->only(['create', 'store']);
+        $this->middleware('permission:trajes.editar')->only(['edit', 'update']);
+        $this->middleware('permission:trajes.eliminar')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

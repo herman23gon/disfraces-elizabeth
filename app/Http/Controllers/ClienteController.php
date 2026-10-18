@@ -7,6 +7,14 @@ use App\Models\Cliente;
 
 class ClienteController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:clientes.ver')->only(['index', 'show']);
+        $this->middleware('permission:clientes.crear')->only(['create', 'store']);
+        $this->middleware('permission:clientes.editar')->only(['edit', 'update']);
+        $this->middleware('permission:clientes.eliminar')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

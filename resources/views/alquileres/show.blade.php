@@ -93,9 +93,11 @@
                     🖨️ Imprimir Recibo
                 </a>
                 @if ($alquiler->estado == 'activo')
+                @can('alquileres.editar')
                 <a href="{{ route('devoluciones.create', $alquiler->id) }}" class="bg-orange-600 text-white px-4 py-2 rounded inline-block mb-4 ml-2">
                     📦 Registrar Devolución
                 </a>
+                @endcan
                 @endif
                 @if ($alquiler->estado == 'devuelto' && $alquiler->devolucion)
                 <div class="border-t pt-4 mt-4">

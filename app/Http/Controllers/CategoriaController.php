@@ -7,6 +7,14 @@ use App\Models\Categoria;
 
 class CategoriaController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:categorias.ver')->only(['index', 'show']);
+        $this->middleware('permission:categorias.crear')->only(['create', 'store']);
+        $this->middleware('permission:categorias.editar')->only(['edit', 'update']);
+        $this->middleware('permission:categorias.eliminar')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

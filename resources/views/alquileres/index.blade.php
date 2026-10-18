@@ -15,9 +15,11 @@
                     </div>
                 @endif
 
+                @can('alquileres.crear')
                 <a href="{{ route('alquileres.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
                     + Nuevo Alquiler
                 </a>
+                @endcan
 
                 <table class="w-full mt-4 border text-sm">
                     <thead class="bg-gray-100">

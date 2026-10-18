@@ -19,9 +19,11 @@
                         {{ session('error') }}
                     </div>
                 @endif
+                @can('categorias.crear')
                 <a href="{{ route('categorias.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
                     + Nueva Categoría
                 </a>
+                @endcan
 
                 <table class="w-full mt-4 border">
                     <thead class="bg-gray-100">
@@ -39,13 +41,17 @@
                                 <td class="p-2">{{ $categoria->descripcion }}</td>
                                 <td class="p-2">{{ $categoria->estado ? 'Activo' : 'Inactivo' }}</td>
                                 <td class="p-2">
+                                    @can('categorias.editar')
                                     <a href="{{ route('categorias.edit', $categoria->id) }}" class="text-blue-600">Editar</a>
+                                    @endcan
 
+                                    @can('categorias.eliminar')
                                     <form action="{{ route('categorias.destroy', $categoria->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta categoría?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 ml-2">Eliminar</button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

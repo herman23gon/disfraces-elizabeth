@@ -3,7 +3,7 @@
         <script src="{{ asset('js/jquery.min.js') }}"></script>
         <script src="{{ asset('js/select2.min.js') }}"></script>
     {{-- Select2 CSS cargado localmente --}}
- <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
         <style>
             .select2-container--default .select2-selection--single {
                 border: 1px solid #d1d5db;
@@ -238,8 +238,7 @@
 
         // Agregar automáticamente un traje al cargar la página
         agregarTraje();
-       </script>
-
+    </script>
         <script>
             $(document).ready(function() {
                 $('#select-cliente').select2({

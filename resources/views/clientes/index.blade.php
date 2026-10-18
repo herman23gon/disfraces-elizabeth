@@ -20,9 +20,11 @@
                     </div>
                 @endif
 
+                @can('clientes.crear')
                 <a href="{{ route('clientes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
                     + Nuevo Cliente
                 </a>
+                @endcan
 
                 <table class="w-full mt-4 border">
                     <thead class="bg-gray-100">
@@ -38,13 +40,17 @@
                                 <td class="p-2">{{ $cliente->nombre }}</td>
                                 <td class="p-2">{{ $cliente->telefono }}</td>
                                 <td class="p-2">
+                                    @can('clientes.editar')
                                     <a href="{{ route('clientes.edit', $cliente->id) }}" class="text-blue-600">Editar</a>
+                                    @endcan
 
+                                    @can('clientes.eliminar')
                                     <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este cliente?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 ml-2">Eliminar</button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

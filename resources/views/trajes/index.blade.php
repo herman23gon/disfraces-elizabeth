@@ -20,9 +20,11 @@
                     </div>
                 @endif
 
+                @can('trajes.crear')
                 <a href="{{ route('trajes.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
                     + Nuevo Traje
                 </a>
+                @endcan
 
                 <table class="w-full mt-4 border">
                     <thead class="bg-gray-100">
@@ -48,13 +50,17 @@
                                 <td class="p-2">Bs. {{ $traje->precio_referencia }}</td>
                                 <td class="p-2">{{ $traje->estado ? 'Activo' : 'Inactivo' }}</td>
                                 <td class="p-2">
+                                    @can('trajes.editar')
                                     <a href="{{ route('trajes.edit', $traje->id) }}" class="text-blue-600">Editar</a>
+                                    @endcan
 
+                                    @can('trajes.eliminar')
                                     <form action="{{ route('trajes.destroy', $traje->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este traje?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 ml-2">Eliminar</button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

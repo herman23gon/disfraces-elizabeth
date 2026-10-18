@@ -10,6 +10,14 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class AlquilerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:alquileres.ver')->only(['index', 'show']);
+        $this->middleware('permission:alquileres.crear')->only(['create', 'store']);
+        $this->middleware('permission:alquileres.editar')->only(['edit', 'update']);
+        $this->middleware('permission:alquileres.eliminar')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

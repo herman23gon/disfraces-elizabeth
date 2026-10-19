@@ -33,19 +33,31 @@
             </a>
         </div>
 
-        @role('administrador')
+        @if ($usuario->hasRole('administrador') || $usuario->can('bitacora.ver') || $usuario->can('backup.ver'))
         <div>
             <p class="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-green-400">Administración</p>
             <div class="space-y-1">
+                @role('administrador')
                 <a href="{{ route('usuarios.index') }}" class="{{ $clase(request()->routeIs('usuarios.*')) }}">
                     <span>👤</span> Usuarios
                 </a>
                 <a href="{{ route('roles-permisos.index') }}" class="{{ $clase(request()->routeIs('roles-permisos.*')) }}">
                     <span>🔐</span> Roles y Permisos
                 </a>
+                @endrole
+                @can('bitacora.ver')
+                <a href="{{ route('bitacoras.index') }}" class="{{ $clase(request()->routeIs('bitacoras.*')) }}">
+                    <span>📜</span> Bitácora
+                </a>
+                @endcan
+                @can('backup.ver')
+                <a href="{{ route('backups.index') }}" class="{{ $clase(request()->routeIs('backups.*')) }}">
+                    <span>💾</span> Copia de Seguridad
+                </a>
+                @endcan
             </div>
         </div>
-        @endrole
+        @endif
 
         @canany(['categorias.ver', 'trajes.ver'])
         <div>

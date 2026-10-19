@@ -49,6 +49,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Verificar que el usuario no esté deshabilitado
+        if (! Auth::user()->activo) {
+            Auth::guard('web')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta ha sido deshabilitada. Contactá al administrador.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

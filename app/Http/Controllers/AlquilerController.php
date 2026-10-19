@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use App\Models\Alquiler;
 use App\Models\Cliente;
 use App\Models\Traje;
@@ -128,6 +129,8 @@ class AlquilerController extends Controller
                 ]);
             }
         }
+
+        RegistrarBitacora::registrar('Crear', 'Alquileres', 'Alquiler registrado: ' . $alquiler->numero_recibo . ' - Total Bs. ' . number_format($alquiler->total, 2));
 
         return redirect()->route('alquileres.show', $alquiler->id)->with('success', 'Alquiler registrado correctamente.');
     }

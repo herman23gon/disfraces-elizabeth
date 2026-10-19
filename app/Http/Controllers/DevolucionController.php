@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use App\Models\Alquiler;
 use App\Models\Devolucion;
 use App\Models\Traje;
@@ -59,6 +60,8 @@ class DevolucionController extends Controller
 
         // Marcar todas las garantías de ese alquiler como devueltas
         $alquiler->garantias()->update(['estado' => 'devuelta']);
+
+        RegistrarBitacora::registrar('Devolución', 'Alquileres', 'Devolución registrada del alquiler ' . $alquiler->numero_recibo . ($request->penalidad > 0 ? ' - Penalidad Bs. ' . number_format($request->penalidad, 2) : ''));
 
         return redirect()->route('alquileres.show', $alquiler->id)->with('success', 'Devolución registrada correctamente. Stock actualizado.');
     }

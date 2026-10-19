@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'activo',
     ];
 
     /**
@@ -42,5 +43,24 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'activo' => 'boolean',
     ];
+
+    /**
+     * Solo usuarios habilitados
+     */
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    public function alquileres()
+    {
+        return $this->hasMany(Alquiler::class, 'usuario_id');
+    }
+
+    public function devoluciones()
+    {
+        return $this->hasMany(Devolucion::class, 'usuario_id');
+    }
 }

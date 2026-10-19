@@ -48,16 +48,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($modulos as $modulo => $nombreModulo)
+                                @foreach ($modulos as $modulo => $datos)
                                     <tr class="border-t">
-                                        <td class="p-2 border font-semibold">{{ $nombreModulo }}</td>
+                                        <td class="p-2 border font-semibold">{{ $datos['nombre'] }}</td>
 
                                         {{-- Administrador: siempre todos los permisos --}}
                                         @foreach ($acciones as $accion => $nombreAccion)
                                             <td class="p-2 border text-center bg-gray-50">
-                                                <input type="checkbox" checked disabled
-                                                       class="rounded border-gray-300 text-green-600 opacity-60 cursor-not-allowed"
-                                                       title="El administrador siempre tiene este permiso">
+                                                @if (in_array($accion, $datos['acciones']))
+                                                    <input type="checkbox" checked disabled
+                                                           class="rounded border-gray-300 text-green-600 opacity-60 cursor-not-allowed"
+                                                           title="El administrador siempre tiene este permiso">
+                                                @else
+                                                    <span class="text-gray-300">—</span>
+                                                @endif
                                             </td>
                                         @endforeach
 
@@ -65,10 +69,14 @@
                                         @foreach ($acciones as $accion => $nombreAccion)
                                             @php $permiso = $modulo . '.' . $accion; @endphp
                                             <td class="p-2 border text-center">
-                                                <input type="checkbox" name="permisos[]" value="{{ $permiso }}"
-                                                       @checked(in_array($permiso, old('permisos', $permisosEmpleado)))
-                                                       class="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                                       title="{{ $nombreAccion }} {{ $nombreModulo }}">
+                                                @if (in_array($accion, $datos['acciones']))
+                                                    <input type="checkbox" name="permisos[]" value="{{ $permiso }}"
+                                                           @checked(in_array($permiso, old('permisos', $permisosEmpleado)))
+                                                           class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                                           title="{{ $nombreAccion }} {{ $datos['nombre'] }}">
+                                                @else
+                                                    <span class="text-gray-300">—</span>
+                                                @endif
                                             </td>
                                         @endforeach
                                     </tr>
@@ -79,6 +87,7 @@
 
                     <p class="text-xs text-gray-500 mt-3">
                         Nota: en Reportes solo se usa el permiso <strong>Ver</strong>. Registrar una devolución requiere <strong>Editar</strong> en Alquileres.
+                        En Copia de Seguridad, <strong>Generar</strong> permite crear y descargar copias; <strong>Ver</strong> solo muestra la lista.
                     </p>
 
                     <div class="mt-4">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use App\Models\Cliente;
 
 class ClienteController extends Controller
@@ -44,7 +45,8 @@ class ClienteController extends Controller
         'telefono.unique' => 'Ya existe un cliente registrado con este número de teléfono.',
     ]);
 
-        Cliente::create($request->all());
+        $cliente = Cliente::create($request->all());
+        RegistrarBitacora::registrar('Crear', 'Clientes', 'Cliente registrado: ' . $cliente->nombre);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente registrado correctamente.');
     }
@@ -78,6 +80,7 @@ class ClienteController extends Controller
 
         $cliente = Cliente::findOrFail($id);
         $cliente->update($request->all());
+        RegistrarBitacora::registrar('Editar', 'Clientes', 'Cliente actualizado: ' . $cliente->nombre);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente actualizado correctamente.');
     }
@@ -91,6 +94,7 @@ class ClienteController extends Controller
 
         try {
             $cliente->delete();
+            RegistrarBitacora::registrar('Eliminar', 'Clientes', 'Cliente eliminado: ' . $cliente->nombre);
             return redirect()->route('clientes.index')->with('success', 'Cliente eliminado correctamente.');
         } catch (\Exception $e) {
             return redirect()->route('clientes.index')->with('error', 'No se puede eliminar este cliente porque tiene alquileres registrados.');

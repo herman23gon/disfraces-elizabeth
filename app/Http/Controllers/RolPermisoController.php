@@ -3,18 +3,26 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RolPermisoController extends Controller
 {
+    private const CRUD = ['ver', 'crear', 'editar', 'eliminar'];
+
+    /**
+     * Módulos y las acciones que admite cada uno
+     */
     public const MODULOS = [
-        'categorias' => 'Categorías',
-        'trajes' => 'Trajes',
-        'clientes' => 'Clientes',
-        'alquileres' => 'Alquileres',
-        'reportes' => 'Reportes',
+        'categorias' => ['nombre' => 'Categorías', 'acciones' => self::CRUD],
+        'trajes' => ['nombre' => 'Trajes', 'acciones' => self::CRUD],
+        'clientes' => ['nombre' => 'Clientes', 'acciones' => self::CRUD],
+        'alquileres' => ['nombre' => 'Alquileres', 'acciones' => self::CRUD],
+        'reportes' => ['nombre' => 'Reportes', 'acciones' => self::CRUD],
+        'bitacora' => ['nombre' => 'Bitácora', 'acciones' => ['ver']],
+        'backup' => ['nombre' => 'Copia de Seguridad', 'acciones' => ['ver', 'generar']],
     ];
 
     public const ACCIONES = [
@@ -22,6 +30,7 @@ class RolPermisoController extends Controller
         'crear' => 'Crear',
         'editar' => 'Editar',
         'eliminar' => 'Eliminar',
+        'generar' => 'Generar',
     ];
 
     /**
@@ -30,8 +39,8 @@ class RolPermisoController extends Controller
     public static function nombresPermisos(): array
     {
         $permisos = [];
-        foreach (array_keys(self::MODULOS) as $modulo) {
-            foreach (array_keys(self::ACCIONES) as $accion) {
+        foreach (self::MODULOS as $modulo => $datos) {
+            foreach ($datos['acciones'] as $accion) {
                 $permisos[] = $modulo . '.' . $accion;
             }
         }
@@ -80,6 +89,7 @@ class RolPermisoController extends Controller
 
         $empleado = Role::findByName('empleado');
         $empleado->syncPermissions($request->input('permisos', []));
+        RegistrarBitacora::registrar('Editar', 'Roles y Permisos', 'Permisos del rol Empleado: ' . (implode(', ', $request->input('permisos', [])) ?: 'ninguno'));
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 

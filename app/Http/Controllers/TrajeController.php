@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use App\Models\Traje;
 use App\Models\Categoria;
 
@@ -49,7 +50,8 @@ class TrajeController extends Controller
             'precio_referencia' => 'required|numeric|min:0',
         ]);
 
-        Traje::create($request->all());
+        $traje = Traje::create($request->all());
+        RegistrarBitacora::registrar('Crear', 'Trajes', 'Traje registrado: ' . $traje->nombre);
 
         return redirect()->route('trajes.index')->with('success', 'Traje registrado correctamente.');
     }
@@ -89,6 +91,7 @@ class TrajeController extends Controller
 
         $traje = Traje::findOrFail($id);
         $traje->update($request->all());
+        RegistrarBitacora::registrar('Editar', 'Trajes', 'Traje actualizado: ' . $traje->nombre);
 
         return redirect()->route('trajes.index')->with('success', 'Traje actualizado correctamente.');
     }
@@ -102,6 +105,7 @@ class TrajeController extends Controller
 
             try {
                 $traje->delete(); // elimina el traje
+                RegistrarBitacora::registrar('Eliminar', 'Trajes', 'Traje eliminado: ' . $traje->nombre);
                 return redirect()->route('trajes.index')->with('success', 'Traje eliminado correctamente.');
             } catch (\Exception $e) {
                 return redirect()->route('trajes.index')->with('error', 'No se puede eliminar este traje porque tiene alquileres registrados.');

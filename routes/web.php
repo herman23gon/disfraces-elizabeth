@@ -11,6 +11,8 @@ use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RolPermisoController;
+use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\BackupController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -54,9 +56,16 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['role:administrador'])->group(function () {
     Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::patch('usuarios/{usuario}/toggle-activo', [UsuarioController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
     Route::get('/roles-permisos', [RolPermisoController::class, 'index'])->name('roles-permisos.index');
     Route::put('/roles-permisos', [RolPermisoController::class, 'update'])->name('roles-permisos.update');
     });
+
+    // Bitácora y Copia de Seguridad: acceso según permisos (bitacora.ver, backup.ver, backup.generar)
+    Route::resource('bitacoras', BitacoraController::class)->only(['index']);
+    Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+    Route::post('/backups/generar', [BackupController::class, 'generar'])->name('backups.generar');
+    Route::get('/backups/{nombre}/descargar', [BackupController::class, 'descargar'])->name('backups.descargar');
 });
 
 require __DIR__.'/auth.php';

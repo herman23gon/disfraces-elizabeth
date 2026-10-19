@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\RegistrarBitacora;
 use App\Models\Categoria;
 
 class CategoriaController extends Controller
@@ -42,7 +43,8 @@ class CategoriaController extends Controller
             'descripcion' => 'nullable|string',
         ]);
 
-        Categoria::create($request->all());
+        $categoria = Categoria::create($request->all());
+        RegistrarBitacora::registrar('Crear', 'Categorías', 'Categoría creada: ' . $categoria->nombre);
 
         return redirect()->route('categorias.index')->with('success', 'Categoría creada correctamente.');
     }
@@ -77,6 +79,7 @@ class CategoriaController extends Controller
 
         $categoria = Categoria::findOrFail($id);
         $categoria->update($request->all());
+        RegistrarBitacora::registrar('Editar', 'Categorías', 'Categoría actualizada: ' . $categoria->nombre);
 
         return redirect()->route('categorias.index')->with('success', 'Categoría actualizada correctamente.');
     }
@@ -90,6 +93,7 @@ class CategoriaController extends Controller
 
         try {
                $categoria->delete();
+            RegistrarBitacora::registrar('Eliminar', 'Categorías', 'Categoría eliminada: ' . $categoria->nombre);
             return redirect()->route('categorias.index')->with('success', 'Categoría eliminada correctamente.');
              } catch (\Exception $e) {
               return redirect()->route('categorias.index')->with('error', 'No se puede eliminar esta categoría porque tiene trajes asociados.');

@@ -26,6 +26,21 @@
                         <textarea name="descripcion" class="w-full border rounded p-2">{{ old('descripcion', $categoria->descripcion) }}</textarea>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Estado</label>
+                        <select name="estado" class="w-full border rounded p-2">
+                            <option value="1" @selected(old('estado', $categoria->estado) == 1)>Activo</option>
+                            <option value="0" @selected(old('estado', $categoria->estado) == 0)>Inactivo</option>
+                        </select>
+                        <p class="text-gray-500 text-xs mt-1">
+                            Una categoría inactiva no aparece al registrar trajes, y sus trajes no se ofrecen en nuevos alquileres
+                            (por ejemplo, fuera de temporada). Los trajes alquilados se pueden devolver normalmente.
+                        </p>
+                        @error('estado')
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
                         Actualizar
                     </button>

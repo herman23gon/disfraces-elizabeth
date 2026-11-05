@@ -3,85 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\RegistrarBitacora;
+use App\Services\BackupService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Process\Process;
 
 class BackupController extends Controller
 {
-    public function __construct()
+    public function __construct(private BackupService $backups)
     {
         $this->middleware('can:backup.ver')->only(['index']);
         // Descargar una copia expone toda la base de datos, por eso requiere el mismo permiso que generarla
         $this->middleware('can:backup.generar')->only(['generar', 'descargar']);
-    }
-
-    private function carpeta(): string
-    {
-        return storage_path('app/backups');
+        // Cambiar dónde y cuándo se guardan las copias: solo administrador
+        $this->middleware('role:administrador')->only(['configurar']);
     }
 
     public function index()
     {
-        File::ensureDirectoryExists($this->carpeta());
+        File::ensureDirectoryExists($this->backups->carpeta());
 
-        $backups = collect(File::files($this->carpeta()))
+        $backups = collect(File::files($this->backups->carpeta()))
             ->filter(fn ($archivo) => $archivo->getExtension() === 'sql')
             ->map(fn ($archivo) => [
                 'nombre' => $archivo->getFilename(),
                 'tamano' => $archivo->getSize(),
                 'fecha' => $archivo->getMTime(),
+                'automatica' => str_starts_with($archivo->getFilename(), BackupService::PREFIJO_AUTOMATICO),
             ])
             ->sortByDesc('fecha')
             ->values();
 
-        return view('backups.index', compact('backups'));
+        $config = $this->backups->configuracion();
+
+        return view('backups.index', compact('backups', 'config'));
     }
 
     public function generar()
     {
-        File::ensureDirectoryExists($this->carpeta());
+        $resultado = $this->backups->generar();
 
-        $db = config('database.connections.mysql');
-        $nombre = 'backup_' . now()->format('Y-m-d_H-i') . '.sql';
-        $ruta = $this->carpeta() . DIRECTORY_SEPARATOR . $nombre;
+        if (!$resultado['ok']) {
+            return redirect()->route('backups.index')->with('error', 'Error al generar la copia de seguridad: ' . $resultado['error']);
+        }
 
-        // Equivale a: mysqldump --user=root --password= --host=127.0.0.1 disfraces_elizabeth > backup.sql
-        $process = new Process([
-            $db['dump_path'] ?? 'mysqldump',
-            '--user=' . $db['username'],
-            '--host=' . $db['host'],
-            '--port=' . $db['port'],
-            '--routines',
-            '--result-file=' . $ruta,
-            $db['database'],
-        ], null, [
-            // La contraseña va por variable de entorno para no exponerla en la línea de comandos
-            'MYSQL_PWD' => (string) $db['password'],
+        RegistrarBitacora::registrar('Generar', 'Copia de Seguridad', 'Copia generada: ' . $resultado['nombre']);
+
+        // Se vuelve a la lista (ya con la copia nueva) y la vista inicia la descarga automáticamente
+        return redirect()->route('backups.index')
+            ->with('success', 'Copia de seguridad generada: ' . $resultado['nombre'])
+            ->with('descargar', $resultado['nombre']);
+    }
+
+    public function configurar(Request $request)
+    {
+        $request->validate([
+            'carpeta_adicional' => 'nullable|string|max:255',
         ]);
-        $process->setTimeout(300);
 
-        try {
-            $process->run();
-        } catch (\Exception $e) {
-            report($e);
+        $carpeta = trim((string) $request->carpeta_adicional) ?: null;
+
+        if ($carpeta && !BackupService::carpetaEscribible($carpeta)) {
+            return redirect()->route('backups.index')
+                ->withErrors(['carpeta_adicional' => 'La carpeta "' . $carpeta . '" no existe, no está conectada o no se puede escribir en ella.'])
+                ->withInput();
         }
 
-        if (!$process->isSuccessful() || !File::exists($ruta) || File::size($ruta) === 0) {
-            File::delete($ruta);
-            $detalle = trim($process->getErrorOutput()) ?: 'No se pudo ejecutar mysqldump. Verifique MYSQLDUMP_PATH en el archivo .env.';
+        $this->backups->guardarConfiguracion([
+            'automatico_activo' => $request->boolean('automatico_activo'),
+            'carpeta_adicional' => $carpeta,
+        ]);
 
-            return redirect()->route('backups.index')->with('error', 'Error al generar la copia de seguridad: ' . $detalle);
-        }
+        RegistrarBitacora::registrar('Editar', 'Copia de Seguridad', 'Copia automática ' . ($request->boolean('automatico_activo') ? 'activada' : 'desactivada') . '. Carpeta adicional: ' . ($carpeta ?: 'ninguna'));
 
-        RegistrarBitacora::registrar('Generar', 'Copia de Seguridad', 'Copia generada: ' . $nombre);
-
-        return response()->download($ruta, $nombre);
+        return redirect()->route('backups.index')->with('success', 'Configuración de copia automática guardada.');
     }
 
     public function descargar(string $nombre)
     {
         $nombre = basename($nombre); // evita rutas fuera de la carpeta de backups
-        $ruta = $this->carpeta() . DIRECTORY_SEPARATOR . $nombre;
+        $ruta = $this->backups->carpeta() . DIRECTORY_SEPARATOR . $nombre;
 
         abort_unless(str_ends_with($nombre, '.sql') && File::exists($ruta), 404);
 

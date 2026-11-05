@@ -19,28 +19,48 @@
                         {{ session('error') }}
                     </div>
                 @endif
-                @can('categorias.crear')
-                <a href="{{ route('categorias.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
-                    + Nueva Categoría
-                </a>
-                @endcan
+                <div class="flex flex-wrap gap-2 mb-4">
+                    @can('categorias.crear')
+                    <a href="{{ route('categorias.create') }}" class="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition">
+                        + Nueva Categoría
+                    </a>
+                    @endcan
+                    <a href="{{ route('categorias.pdf') }}" target="_blank"
+                       class="border border-green-700 text-green-700 hover:bg-green-50 px-5 py-2 rounded-lg font-semibold transition">
+                        🖨️ Imprimir lista (PDF)
+                    </a>
+                </div>
 
-                <table class="w-full mt-4 border">
-                    <thead class="bg-gray-100">
+                <table class="w-full mt-4 text-sm">
+                    <thead class="bg-green-50 text-green-900">
                         <tr>
                             <th class="p-2 text-left">Nombre</th>
                             <th class="p-2 text-left">Descripción</th>
-                            <th class="p-2 text-left">Estado</th>
-                            <th class="p-2 text-left">Acciones</th>
+                            <th class="p-2 text-center">Trajes</th>
+                            <th class="p-2 text-center">Unidades</th>
+                            <th class="p-2 text-center">Estado</th>
+                            <th class="p-2 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($categorias as $categoria)
-                            <tr class="border-t">
-                                <td class="p-2">{{ $categoria->nombre }}</td>
-                                <td class="p-2">{{ $categoria->descripcion }}</td>
-                                <td class="p-2">{{ $categoria->estado ? 'Activo' : 'Inactivo' }}</td>
-                                <td class="p-2">
+                            <tr class="border-t align-top hover:bg-gray-50 {{ $categoria->estado ? '' : 'text-gray-400' }}">
+                                <td class="p-2 font-semibold">{{ $categoria->nombre }}</td>
+                                <td class="p-2">{{ $categoria->descripcion ?: '—' }}</td>
+                                <td class="p-2 text-center">
+                                    @can('trajes.ver')
+                                        <a href="{{ route('trajes.index', ['categoria_id' => $categoria->id]) }}" class="text-green-700 hover:underline" title="Ver los trajes de esta categoría">{{ $categoria->trajes_count }}</a>
+                                    @else
+                                        {{ $categoria->trajes_count }}
+                                    @endcan
+                                </td>
+                                <td class="p-2 text-center">{{ (int) $categoria->unidades }}</td>
+                                <td class="p-2 text-center">
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $categoria->estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ $categoria->estado ? 'Activa' : 'Inactiva' }}
+                                    </span>
+                                </td>
+                                <td class="p-2 text-right whitespace-nowrap">
                                     @can('categorias.editar')
                                     <a href="{{ route('categorias.edit', $categoria->id) }}" class="text-blue-600">Editar</a>
                                     @endcan

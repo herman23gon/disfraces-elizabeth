@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\RolPermisoController;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -21,9 +22,24 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // El administrador tiene todos los permisos y no se le pueden quitar
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('administrador') ? true : null;
+            // El administrador tiene todos los permisos y no se le pueden quitar
+            if ($user->hasRole('administrador')) {
+                return true;
+            }
+
+            // Solo se resuelven aquí los permisos del sistema (ej: categorias.ver)
+            if (!in_array($ability, RolPermisoController::nombresPermisos())) {
+                return null;
+            }
+
+            // Empleado personalizado: solo sus propias casillas
+            if ($user->permisos_personalizados) {
+                return $user->getDirectPermissions()->contains('name', $ability);
+            }
+
+            // Resto: los permisos de su rol
+            return $user->getPermissionsViaRoles()->contains('name', $ability);
         });
     }
 }

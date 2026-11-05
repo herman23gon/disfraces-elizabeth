@@ -20,6 +20,7 @@ class PermisoSeeder extends Seeder
                 'trajes.ver', 'trajes.crear', 'trajes.editar', 'trajes.eliminar',
                 'clientes.ver', 'clientes.crear', 'clientes.editar', 'clientes.eliminar',
                 'alquileres.ver', 'alquileres.crear', 'alquileres.editar', 'alquileres.eliminar',
+                'devoluciones.crear',
             ]);
         }
     }

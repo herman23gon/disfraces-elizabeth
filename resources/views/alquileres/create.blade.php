@@ -19,6 +19,33 @@
             .select2-container--default .select2-selection--single .select2-selection__arrow {
                 height: 40px;
             }
+            /* Opción resaltada al hacer hover/búsqueda — verde */
+            .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                background-color: #15803d !important;
+                color: #fff !important;
+            }
+            /* Opción ya seleccionada */
+            .select2-container--default .select2-results__option[aria-selected=true] {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+            /* Borde del input de búsqueda al hacer focus */
+            .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+                border-color: #16a34a;
+                outline: none;
+                box-shadow: 0 0 0 2px #bbf7d0;
+            }
+            /* Selects nativos (garantías, forma de pago) — focus verde */
+            select:focus {
+                border-color: #16a34a !important;
+                outline: none;
+                box-shadow: 0 0 0 2px #bbf7d0;
+            }
+            /* Opción seleccionada en select nativo */
+            select option:checked {
+                background-color: #15803d;
+                color: white;
+            }
         </style>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -37,11 +64,19 @@
 
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block font-semibold mb-1">Cliente (Responsable)</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block font-semibold">Cliente (Responsable)</label>
+                                @can('clientes.crear')
+                                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('abrir-nuevo-cliente'))"
+                                            class="text-sm text-green-700 hover:text-green-900 font-semibold">
+                                        + Nuevo cliente
+                                    </button>
+                                @endcan
+                            </div>
                             <select name="cliente_id" id="select-cliente" class="w-full border rounded p-2">
                                 <option value="">-- Buscar cliente --</option>
                                 @foreach ($clientes as $cliente)
-                                    <option value="{{ $cliente->id }}">{{ $cliente->nombre }} - {{ $cliente->telefono }}</option>
+                                    <option value="{{ $cliente->id }}" @selected(old('cliente_id') == $cliente->id)>{{ $cliente->nombre }} - {{ $cliente->telefono }}</option>
                                 @endforeach
                             </select>
                             @error('cliente_id')
@@ -129,11 +164,90 @@
                         <div id="contenedor-garantias"></div>
                     </div>
 
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-semibold">
+                    <button type="submit" class="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-lg font-semibold shadow transition">
                         Guardar Alquiler
                     </button>
                     <a href="{{ route('alquileres.index') }}" class="ml-2 text-gray-600">Cancelar</a>
                 </form>
+
+                @can('clientes.crear')
+                <!-- Ventana para registrar un cliente nuevo sin salir del alquiler -->
+                <div x-data="nuevoCliente()" @abrir-nuevo-cliente.window="abrir()" @keydown.escape.window="abierto = false"
+                     x-show="abierto" x-transition.opacity style="display: none;"
+                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div @click.outside="abierto = false" class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                        <h3 class="font-bold text-lg text-green-900 mb-4">Nuevo cliente</h3>
+
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1 text-sm">Nombre</label>
+                            <input type="text" x-model="nombre" x-ref="nombre" @keydown.enter.prevent="guardar()"
+                                   class="w-full border border-gray-300 rounded-lg p-2 focus:border-green-600 focus:ring-2 focus:ring-green-200 focus:outline-none">
+                            <p class="text-red-600 text-sm" x-text="errores.nombre" x-show="errores.nombre"></p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block font-semibold mb-1 text-sm">Celular</label>
+                            <input type="tel" inputmode="numeric" x-model="telefono" @keydown.enter.prevent="guardar()" placeholder="Ej: 71234567"
+                                   class="w-full border border-gray-300 rounded-lg p-2 focus:border-green-600 focus:ring-2 focus:ring-green-200 focus:outline-none">
+                            <p class="text-gray-500 text-xs mt-1">8 dígitos, empieza con 5, 6 o 7.</p>
+                            <p class="text-red-600 text-sm" x-text="errores.telefono" x-show="errores.telefono"></p>
+                        </div>
+
+                        <p class="text-red-600 text-sm mb-3" x-text="errores.general" x-show="errores.general"></p>
+
+                        <div class="flex justify-end gap-2">
+                            <button type="button" @click="abierto = false" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">Cancelar</button>
+                            <button type="button" @click="guardar()" :disabled="guardando"
+                                    class="px-4 py-2 rounded bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white font-semibold">
+                                <span x-text="guardando ? 'Guardando...' : 'Guardar y seleccionar'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function nuevoCliente() {
+                        return {
+                            abierto: false, guardando: false, nombre: '', telefono: '', errores: {},
+                            abrir() {
+                                this.nombre = ''; this.telefono = ''; this.errores = {};
+                                this.abierto = true;
+                                this.$nextTick(() => this.$refs.nombre.focus());
+                            },
+                            async guardar() {
+                                this.guardando = true; this.errores = {};
+                                try {
+                                    const respuesta = await fetch(@js(route('clientes.store')), {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        },
+                                        body: JSON.stringify({ nombre: this.nombre, telefono: this.telefono }),
+                                    });
+                                    const datos = await respuesta.json();
+
+                                    if (respuesta.status === 422) {
+                                        for (const campo in datos.errors) this.errores[campo] = datos.errors[campo][0];
+                                        return;
+                                    }
+                                    if (!respuesta.ok) throw new Error();
+
+                                    // Agrega el cliente al buscador y lo deja seleccionado
+                                    const opcion = new Option(datos.nombre + ' - ' + datos.telefono, datos.id, true, true);
+                                    $('#select-cliente').append(opcion).trigger('change');
+                                    this.abierto = false;
+                                } catch (e) {
+                                    this.errores.general = 'No se pudo registrar el cliente. Intente de nuevo.';
+                                } finally {
+                                    this.guardando = false;
+                                }
+                            },
+                        };
+                    }
+                </script>
+                @endcan
 
             </div>
         </div>
@@ -207,7 +321,7 @@
                     <div class="grid grid-cols-12 gap-2 items-end">
                         <div class="col-span-3">
                             <label class="text-sm font-semibold">Tipo</label>
-                            <select name="garantias[${id}][tipo_garantia]" class="w-full border rounded p-2 text-sm">
+                            <select name="garantias[${id}][tipo_garantia]" id="select-garantia-${id}" class="w-full border rounded p-2 text-sm">
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Pago QR">Pago QR</option>
                                 <option value="Celular">Celular</option>
@@ -234,6 +348,12 @@
                 </div>
             `;
             document.getElementById('contenedor-garantias').insertAdjacentHTML('beforeend', html);
+            setTimeout(() => {
+                $(`#select-garantia-${id}`).select2({
+                    minimumResultsForSearch: Infinity,
+                    width: '100%'
+                });
+            }, 100);
         }
 
         // Agregar automáticamente un traje al cargar la página

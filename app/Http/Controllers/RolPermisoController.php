@@ -20,6 +20,7 @@ class RolPermisoController extends Controller
         'trajes' => ['nombre' => 'Trajes', 'acciones' => self::CRUD],
         'clientes' => ['nombre' => 'Clientes', 'acciones' => self::CRUD],
         'alquileres' => ['nombre' => 'Alquileres', 'acciones' => self::CRUD],
+        'devoluciones' => ['nombre' => 'Devoluciones', 'acciones' => ['crear']],
         'reportes' => ['nombre' => 'Reportes', 'acciones' => self::CRUD],
         'bitacora' => ['nombre' => 'Bitácora', 'acciones' => ['ver']],
         'backup' => ['nombre' => 'Copia de Seguridad', 'acciones' => ['ver', 'generar']],

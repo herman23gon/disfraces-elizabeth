@@ -24,6 +24,7 @@
                 <p class="text-sm text-gray-600 mb-4">
                     Marque qué acciones puede realizar cada rol en cada módulo.
                     El rol <strong>Administrador</strong> tiene todos los permisos y no se pueden modificar.
+                    Los empleados con permisos personalizados (desde Usuarios → Permisos) no se ven afectados por esta tabla.
                 </p>
 
                 <form action="{{ route('roles-permisos.update') }}" method="POST">
@@ -86,7 +87,7 @@
                     </div>
 
                     <p class="text-xs text-gray-500 mt-3">
-                        Nota: en Reportes solo se usa el permiso <strong>Ver</strong>. Registrar una devolución requiere <strong>Editar</strong> en Alquileres.
+                        Nota: en Reportes solo se usa el permiso <strong>Ver</strong>. En Devoluciones, <strong>Crear</strong> permite registrar la devolución de un alquiler.
                         En Copia de Seguridad, <strong>Generar</strong> permite crear y descargar copias; <strong>Ver</strong> solo muestra la lista.
                     </p>
 

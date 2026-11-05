@@ -19,9 +19,29 @@ class ClienteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clientes = Cliente::all();
+        $hoy = today()->toDateString();
+        $soloDigitos = preg_replace('/\D/', '', (string) $request->q);
+
+        $clientes = Cliente::query()
+            ->withCount('alquileres')
+            ->withMax('alquileres as ultimo_alquiler', 'fecha_alquiler')
+            ->withCount(['alquileres as pendientes' => fn ($q) => $q->where('estado', 'activo')])
+            ->withCount(['alquileres as vencidos' => fn ($q) => $q->where('estado', 'activo')->whereDate('fecha_devolucion_programada', '<', $hoy)])
+            // Para el botón de WhatsApp: el alquiler pendiente más antiguo
+            ->with(['alquileres' => fn ($q) => $q->where('estado', 'activo')->orderBy('fecha_devolucion_programada')])
+            ->when($request->q, fn ($q) => $q->where(fn ($w) => $w
+                ->where('nombre', 'like', '%' . $request->q . '%')
+                ->when($soloDigitos !== '', fn ($w) => $w->orWhere('telefono', 'like', '%' . $soloDigitos . '%'))))
+            ->when($request->filtro === 'pendientes', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->where('estado', 'activo')))
+            ->when($request->filtro === 'vencidos', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->where('estado', 'activo')->whereDate('fecha_devolucion_programada', '<', $hoy)))
+            // Primero los que tienen alquileres vencidos, luego los que tienen pendientes, luego por nombre
+            ->orderByDesc('vencidos')
+            ->orderByDesc('pendientes')
+            ->orderBy('nombre')
+            ->get();
+
         return view('clientes.index', compact('clientes'));
     }
 
@@ -38,15 +58,19 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-    'nombre' => 'required|string|max:255',
-    'telefono' => 'nullable|string|max:20|unique:clientes,telefono',
-    ], [
-        'telefono.unique' => 'Ya existe un cliente registrado con este número de teléfono.',
-    ]);
+        $datos = $this->validarDatos($request);
 
-        $cliente = Cliente::create($request->all());
-        RegistrarBitacora::registrar('Crear', 'Clientes', 'Cliente registrado: ' . $cliente->nombre);
+        $cliente = Cliente::create($datos);
+        RegistrarBitacora::registrar('Crear', 'Clientes', 'Cliente registrado: ' . $cliente->nombre . ' (' . $cliente->telefono . ')');
+
+        // Desde el formulario de alquiler se crea por AJAX y se responde con el cliente nuevo
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $cliente->id,
+                'nombre' => $cliente->nombre,
+                'telefono' => $cliente->telefono,
+            ], 201);
+        }
 
         return redirect()->route('clientes.index')->with('success', 'Cliente registrado correctamente.');
     }
@@ -56,7 +80,26 @@ class ClienteController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $cliente = Cliente::with([
+            'alquileres' => fn ($q) => $q->orderByDesc('fecha_alquiler')->orderByDesc('id'),
+            'alquileres.detalles.traje',
+            'alquileres.garantias',
+            'alquileres.devolucion',
+        ])->findOrFail($id);
+
+        $activos = $cliente->alquileres->where('estado', 'activo');
+
+        $resumen = [
+            'total' => $cliente->alquileres->count(),
+            'activos' => $activos->count(),
+            'vencidos' => $activos->filter(fn ($a) => \Carbon\Carbon::parse($a->fecha_devolucion_programada)->lt(today()))->count(),
+            // Garantías que la tienda tiene en su poder (aún no devueltas)
+            'garantia_retenida' => $cliente->alquileres->flatMap->garantias->where('estado', 'entregada')->sum('monto'),
+            'documentos_retenidos' => $cliente->alquileres->flatMap->garantias->where('estado', 'entregada')->whereNull('monto')->pluck('tipo_garantia'),
+            'total_alquilado' => $cliente->alquileres->sum('total'),
+        ];
+
+        return view('clientes.show', compact('cliente', 'resumen'));
     }
 
     /**
@@ -73,16 +116,41 @@ class ClienteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'telefono' => 'nullable|string|max:20',
-        ]);
-
         $cliente = Cliente::findOrFail($id);
-        $cliente->update($request->all());
+        $cliente->update($this->validarDatos($request, $cliente->id));
         RegistrarBitacora::registrar('Editar', 'Clientes', 'Cliente actualizado: ' . $cliente->nombre);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente actualizado correctamente.');
+    }
+
+    /**
+     * Normaliza y valida nombre y celular (se usa al crear y al editar).
+     * - Celular: solo números, se quita el prefijo +591; 8 dígitos que empiezan con 5, 6 o 7; no se repite.
+     * - Nombre: sin espacios de más y con mayúscula inicial ("maria juana" -> "Maria Juana").
+     */
+    private function validarDatos(Request $request, ?int $ignorarId = null): array
+    {
+        $telefono = preg_replace('/\D/', '', (string) $request->telefono);
+        if (strlen($telefono) === 11 && str_starts_with($telefono, '591')) {
+            $telefono = substr($telefono, 3);
+        }
+
+        $nombre = preg_replace('/\s+/', ' ', trim((string) $request->nombre));
+
+        $request->merge([
+            'telefono' => $telefono,
+            'nombre' => mb_convert_case($nombre, MB_CASE_TITLE, 'UTF-8'),
+        ]);
+
+        return $request->validate([
+            'nombre' => 'required|string|max:255',
+            'telefono' => ['required', 'regex:/^[567]\d{7}$/', 'unique:clientes,telefono' . ($ignorarId ? ',' . $ignorarId : '')],
+        ], [
+            'nombre.required' => 'Ingrese el nombre del cliente.',
+            'telefono.required' => 'Ingrese el número de celular.',
+            'telefono.regex' => 'El celular debe tener 8 dígitos y empezar con 5, 6 o 7.',
+            'telefono.unique' => 'Ya existe un cliente registrado con este número de celular.',
+        ]);
     }
 
     /**

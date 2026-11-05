@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\RegistrarBitacora;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
@@ -42,6 +43,54 @@ class UsuarioController extends Controller
         RegistrarBitacora::registrar('Crear', 'Usuarios', 'Usuario creado: ' . $usuario->name . ' (' . $usuario->email . ') con rol ' . $request->role);
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado correctamente.');
+    }
+
+    /**
+     * Pantalla de permisos de un empleado (del rol o personalizados)
+     */
+    public function permisos(User $usuario)
+    {
+        if ($usuario->hasRole('administrador')) {
+            return redirect()->route('usuarios.index')->with('error', 'El administrador siempre tiene todos los permisos.');
+        }
+
+        RolPermisoController::sincronizarPermisos();
+
+        $rol = $usuario->roles->first();
+
+        return view('usuarios.permisos', [
+            'usuario' => $usuario,
+            'modulos' => RolPermisoController::MODULOS,
+            'acciones' => RolPermisoController::ACCIONES,
+            'permisosUsuario' => $usuario->getDirectPermissions()->pluck('name')->toArray(),
+            'permisosRol' => $rol ? $rol->permissions->pluck('name')->toArray() : [],
+            'nombreRol' => $rol ? ucfirst($rol->name) : 'Sin rol',
+        ]);
+    }
+
+    public function actualizarPermisos(Request $request, User $usuario)
+    {
+        if ($usuario->hasRole('administrador')) {
+            return redirect()->route('usuarios.index')->with('error', 'El administrador siempre tiene todos los permisos.');
+        }
+
+        $request->validate([
+            'modo' => 'required|in:rol,personalizado',
+            'permisos' => 'nullable|array',
+            'permisos.*' => 'in:' . implode(',', RolPermisoController::nombresPermisos()),
+        ]);
+
+        $personalizado = $request->modo === 'personalizado';
+        $permisos = $personalizado ? $request->input('permisos', []) : [];
+
+        $usuario->update(['permisos_personalizados' => $personalizado]);
+        // Sin personalizar no se guardan permisos propios: solo cuentan los del rol
+        $usuario->syncPermissions($permisos);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        RegistrarBitacora::registrar('Editar', 'Usuarios', 'Permisos de ' . $usuario->name . ': ' . ($personalizado ? 'personalizados (' . (implode(', ', $permisos) ?: 'ninguno') . ')' : 'los del rol'));
+
+        return redirect()->route('usuarios.index')->with('success', 'Permisos de ' . $usuario->name . ' actualizados correctamente.');
     }
 
     /**

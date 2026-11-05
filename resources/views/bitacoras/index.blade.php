@@ -63,7 +63,7 @@
                             @forelse ($bitacoras as $bitacora)
                                 <tr class="border-t">
                                     <td class="p-2 whitespace-nowrap">{{ $bitacora->fecha_hora_formateada }}</td>
-                                    <td class="p-2">{{ $bitacora->user->name ?? 'Usuario eliminado' }}</td>
+                                    <td class="p-2">{{ $bitacora->user->name ?? ($bitacora->ip ? 'Usuario eliminado' : 'Sistema') }}</td>
                                     <td class="p-2">{{ $bitacora->modulo }}</td>
                                     <td class="p-2">
                                         @php
@@ -71,6 +71,9 @@
                                                 'Crear' => 'bg-green-100 text-green-800',
                                                 'Editar' => 'bg-blue-100 text-blue-800',
                                                 'Eliminar' => 'bg-red-100 text-red-800',
+                                                'Error' => 'bg-red-100 text-red-800',
+                                                'Baja' => 'bg-orange-100 text-orange-800',
+                                                'Generar' => 'bg-green-100 text-green-800',
                                                 'Habilitar' => 'bg-green-100 text-green-800',
                                                 'Deshabilitar' => 'bg-orange-100 text-orange-800',
                                             ];

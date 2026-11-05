@@ -40,11 +40,15 @@ Route::middleware('auth')->group(function () {
     
     // Los permisos por acción (ver/crear/editar/eliminar) se aplican en cada controlador
     Route::resource('clientes', ClienteController::class);
+    // Las rutas de PDF van antes del resource para que "pdf" no se tome como un {id}
+    Route::get('categorias/pdf', [CategoriaController::class, 'pdf'])->name('categorias.pdf');
     Route::resource('categorias', CategoriaController::class);
+    Route::get('trajes/pdf', [TrajeController::class, 'pdf'])->name('trajes.pdf');
     Route::resource('trajes', TrajeController::class);
+    Route::post('trajes/{traje}/baja', [TrajeController::class, 'baja'])->name('trajes.baja');
     Route::get('/alquileres/{id}/recibo', [AlquilerController::class, 'recibo'])->middleware('permission:alquileres.ver')->name('alquileres.recibo');
-    Route::get('/alquileres/{id}/devolucion', [DevolucionController::class, 'create'])->middleware('permission:alquileres.editar')->name('devoluciones.create');
-    Route::post('/alquileres/{id}/devolucion', [DevolucionController::class, 'store'])->middleware('permission:alquileres.editar')->name('devoluciones.store');
+    Route::get('/alquileres/{id}/devolucion', [DevolucionController::class, 'create'])->middleware('permission:devoluciones.crear')->name('devoluciones.create');
+    Route::post('/alquileres/{id}/devolucion', [DevolucionController::class, 'store'])->middleware('permission:devoluciones.crear')->name('devoluciones.store');
     Route::resource('alquileres', AlquilerController::class);
     
     Route::middleware(['permission:reportes.ver'])->group(function () {
@@ -57,6 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:administrador'])->group(function () {
     Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::patch('usuarios/{usuario}/toggle-activo', [UsuarioController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
+    Route::get('usuarios/{usuario}/permisos', [UsuarioController::class, 'permisos'])->name('usuarios.permisos');
+    Route::put('usuarios/{usuario}/permisos', [UsuarioController::class, 'actualizarPermisos'])->name('usuarios.permisos.update');
     Route::get('/roles-permisos', [RolPermisoController::class, 'index'])->name('roles-permisos.index');
     Route::put('/roles-permisos', [RolPermisoController::class, 'update'])->name('roles-permisos.update');
     });
@@ -65,6 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('bitacoras', BitacoraController::class)->only(['index']);
     Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
     Route::post('/backups/generar', [BackupController::class, 'generar'])->name('backups.generar');
+    Route::put('/backups/configurar', [BackupController::class, 'configurar'])->name('backups.configurar');
     Route::get('/backups/{nombre}/descargar', [BackupController::class, 'descargar'])->name('backups.descargar');
 });
 

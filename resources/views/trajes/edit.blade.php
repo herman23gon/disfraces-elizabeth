@@ -6,7 +6,30 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            @if (session('success'))
+                <div class="p-4 bg-green-100 text-green-700 rounded">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- Resumen de stock -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-gray-400">
+                    <p class="text-xs text-gray-500">Total en tienda</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $traje->cantidad_total }}</p>
+                </div>
+                <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-orange-400">
+                    <p class="text-xs text-gray-500">Alquilados ahora</p>
+                    <p class="text-2xl font-bold text-orange-600">{{ $alquilados }}</p>
+                </div>
+                <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-green-600">
+                    <p class="text-xs text-gray-500">Disponibles</p>
+                    <p class="text-2xl font-bold text-green-700">{{ $traje->cantidad_disponible }}</p>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
                 <form action="{{ route('trajes.update', $traje->id) }}" method="POST">
@@ -18,7 +41,7 @@
                         <select name="categoria_id" class="w-full border rounded p-2">
                             @foreach ($categorias as $categoria)
                                 <option value="{{ $categoria->id }}" {{ old('categoria_id', $traje->categoria_id) == $categoria->id ? 'selected' : '' }}>
-                                    {{ $categoria->nombre }}
+                                    {{ $categoria->nombre }}{{ $categoria->estado ? '' : ' (inactiva)' }}
                                 </option>
                             @endforeach
                         </select>
@@ -47,16 +70,20 @@
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
                     </div>
-                    
+
                     <div class="mb-4">
                         <label class="block font-semibold mb-1">Descripción</label>
                         <textarea name="descripcion" class="w-full border rounded p-2">{{ old('descripcion', $traje->descripcion) }}</textarea>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block font-semibold mb-1">Cantidad disponible</label>
-                        <input type="number" name="cantidad_disponible" value="{{ old('cantidad_disponible', $traje->cantidad_disponible) }}" class="w-full border rounded p-2">
-                        @error('cantidad_disponible')
+                        <label class="block font-semibold mb-1">Cantidad total</label>
+                        <input type="number" name="cantidad_total" min="{{ $alquilados }}" value="{{ old('cantidad_total', $traje->cantidad_total) }}" class="w-full border rounded p-2">
+                        <p class="text-gray-500 text-xs mt-1">
+                            Unidades que tiene la tienda. Súbalo si compró más; el disponible se recalcula solo.
+                            Para unidades dañadas o perdidas use <strong>Dar de baja</strong> (queda registrado el motivo).
+                        </p>
+                        @error('cantidad_total')
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
                     </div>
@@ -69,13 +96,102 @@
                         @enderror
                     </div>
 
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Estado</label>
+                        <select name="estado" class="w-full border rounded p-2">
+                            <option value="1" @selected(old('estado', $traje->estado) == 1)>Activo</option>
+                            <option value="0" @selected(old('estado', $traje->estado) == 0)>Inactivo</option>
+                        </select>
+                        <p class="text-gray-500 text-xs mt-1">
+                            Un traje inactivo no se ofrece en nuevos alquileres (por ejemplo, en reparación o lavandería).
+                            Si está alquilado se puede devolver normalmente.
+                        </p>
+                        @if (!$traje->categoria->estado)
+                            <p class="text-yellow-700 text-xs mt-1">
+                                La categoría "{{ $traje->categoria->nombre }}" está inactiva: este traje no se ofrece en alquileres aunque esté activo.
+                            </p>
+                        @endif
+                    </div>
+
+                    <button type="submit" class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded">
                         Actualizar
                     </button>
                     <a href="{{ route('trajes.index') }}" class="ml-2 text-gray-600">Cancelar</a>
                 </form>
 
             </div>
+
+            <!-- Dar de baja -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="font-semibold text-gray-800 mb-1">Dar de baja unidades</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Para unidades dañadas, perdidas o que ya no se alquilarán. Se descuentan del total y del disponible.
+                    Solo se pueden dar de baja unidades disponibles; si una está alquilada, primero regístrese su devolución.
+                </p>
+
+                @if ($traje->cantidad_disponible > 0)
+                    <form action="{{ route('trajes.baja', $traje->id) }}" method="POST"
+                          onsubmit="return confirm('¿Dar de baja estas unidades? Se descontarán del stock.')"
+                          class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
+                        @csrf
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Cantidad</label>
+                            <input type="number" name="cantidad" min="1" max="{{ $traje->cantidad_disponible }}" value="{{ old('cantidad', 1) }}" class="w-full border rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Motivo</label>
+                            <select name="motivo" class="w-full border rounded p-2">
+                                @foreach ($motivos as $motivo)
+                                    <option value="{{ $motivo }}" @selected(old('motivo') === $motivo)>{{ $motivo }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Observación</label>
+                            <input type="text" name="observacion" value="{{ old('observacion') }}" placeholder="Ej: máscara rota" class="w-full border rounded p-2">
+                        </div>
+                        <div class="sm:col-span-3">
+                            @foreach (['cantidad', 'motivo', 'observacion'] as $campo)
+                                @error($campo)
+                                    <p class="text-red-600 text-sm">{{ $message }}</p>
+                                @enderror
+                            @endforeach
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                                Dar de baja
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <p class="text-sm text-gray-500">No hay unidades disponibles para dar de baja.</p>
+                @endif
+
+                @if ($traje->bajas->isNotEmpty())
+                    <h4 class="font-semibold text-sm text-gray-700 mt-6 mb-2">Historial de bajas</h4>
+                    <table class="w-full border text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Fecha</th>
+                                <th class="p-2 text-left">Cant.</th>
+                                <th class="p-2 text-left">Motivo</th>
+                                <th class="p-2 text-left">Observación</th>
+                                <th class="p-2 text-left">Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($traje->bajas->sortByDesc('created_at') as $baja)
+                                <tr class="border-t">
+                                    <td class="p-2 whitespace-nowrap">{{ $baja->created_at->format('d/m/Y') }}</td>
+                                    <td class="p-2">{{ $baja->cantidad }}</td>
+                                    <td class="p-2">{{ $baja->motivo }}</td>
+                                    <td class="p-2">{{ $baja->observacion }}</td>
+                                    <td class="p-2">{{ $baja->user->name ?? '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+
         </div>
     </div>
 </x-app-layout>

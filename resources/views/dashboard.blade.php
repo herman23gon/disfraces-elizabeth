@@ -77,7 +77,7 @@
                                         <td class="p-2">{{ $alquiler->cliente->nombre }}</td>
                                         <td class="p-2 text-red-600 font-semibold">{{ $alquiler->fecha_devolucion_programada_formateada }}</td>
                                         <td class="p-2">
-                                            @can('alquileres.editar')
+                                            @can('devoluciones.crear')
                                                 <a href="{{ route('devoluciones.create', $alquiler->id) }}" class="inline-block bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-xs font-semibold">
                                                     Devolver
                                                 </a>

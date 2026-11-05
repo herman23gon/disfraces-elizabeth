@@ -34,7 +34,8 @@ class AlquilerController extends Controller
     public function create()
     {
         $clientes = Cliente::all();
-        $trajes = Traje::where('estado', true)->where('cantidad_disponible', '>', 0)->get();
+        // Solo trajes activos, de categorías activas y con stock
+        $trajes = Traje::alquilables()->get();
         return view('alquileres.create', compact('clientes', 'trajes'));
     }
 
@@ -69,13 +70,22 @@ class AlquilerController extends Controller
         foreach ($request->trajes as $item) {
             $total += $item['cantidad'] * $item['precio_unitario'];
         }
-        // Validar que haya stock suficiente para cada traje solicitado
-        foreach ($request->trajes as $item) {
-            $traje = Traje::find($item['traje_id']);
+        // Validar que cada traje se pueda alquilar y que haya stock suficiente
+        // (se suman las cantidades por si el mismo traje se agregó dos veces)
+        $cantidades = collect($request->trajes)->groupBy('traje_id')->map(fn ($items) => $items->sum('cantidad'));
 
-            if ($traje->cantidad_disponible < $item['cantidad']) {
+        foreach ($cantidades as $trajeId => $cantidad) {
+            $traje = Traje::with('categoria')->find($trajeId);
+
+            if (!$traje->esAlquilable()) {
                 return back()->withErrors([
-                    'trajes' => "No hay suficiente stock de \"{$traje->nombre}\". Disponible: {$traje->cantidad_disponible}, solicitado: {$item['cantidad']}."
+                    'trajes' => "\"{$traje->nombre}\" no está disponible para alquilar (el traje o su categoría están inactivos)."
+                ])->withInput();
+            }
+
+            if ($traje->cantidad_disponible < $cantidad) {
+                return back()->withErrors([
+                    'trajes' => "No hay suficiente stock de \"{$traje->nombre}\". Disponible: {$traje->cantidad_disponible}, solicitado: {$cantidad}."
                 ])->withInput();
             }
         }

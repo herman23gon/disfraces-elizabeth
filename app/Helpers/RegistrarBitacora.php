@@ -17,7 +17,8 @@ class RegistrarBitacora
                 'accion' => $accion,
                 'modulo' => $modulo,
                 'descripcion' => $descripcion,
-                'ip' => request()->ip(),
+                // Las tareas automáticas (consola) no tienen usuario ni IP: se muestran como "Sistema"
+                'ip' => app()->runningInConsole() ? null : request()->ip(),
             ]);
         } catch (\Exception $e) {
             // Un fallo en la bitácora no debe interrumpir la operación principal

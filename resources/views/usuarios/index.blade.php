@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('usuarios.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
+                <a href="{{ route('usuarios.create') }}" class="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition mb-4 inline-block">
                     + Nuevo Usuario
                 </a>
 
@@ -32,6 +32,7 @@
                             <th class="p-2 text-left">Nombre</th>
                             <th class="p-2 text-left">Email</th>
                             <th class="p-2 text-left">Rol</th>
+                            <th class="p-2 text-left">Permisos</th>
                             <th class="p-2 text-left">Estado</th>
                             <th class="p-2 text-left">Acciones</th>
                         </tr>
@@ -43,6 +44,15 @@
                                 <td class="p-2">{{ $usuario->email }}</td>
                                 <td class="p-2 capitalize">{{ $usuario->getRoleNames()->first() ?? 'Sin rol' }}</td>
                                 <td class="p-2">
+                                    @if ($usuario->hasRole('administrador'))
+                                        <span class="text-gray-400 text-xs">Todos</span>
+                                    @elseif ($usuario->permisos_personalizados)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Personalizado</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Del rol</span>
+                                    @endif
+                                </td>
+                                <td class="p-2">
                                     @if ($usuario->activo)
                                         <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Activo</span>
                                     @else
@@ -51,6 +61,11 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if ($usuario->id !== auth()->id())
+                                        @unless ($usuario->hasRole('administrador'))
+                                            <a href="{{ route('usuarios.permisos', $usuario->id) }}" class="inline-block border border-gray-400 text-gray-700 hover:bg-gray-50 px-3 py-1 rounded text-xs font-semibold mr-1">
+                                                🔐 Permisos
+                                            </a>
+                                        @endunless
                                         <form action="{{ route('usuarios.toggle-activo', $usuario->id) }}" method="POST" class="inline"
                                               onsubmit="return confirm('¿{{ $usuario->activo ? 'Deshabilitar' : 'Habilitar' }} a este usuario?')">
                                             @csrf

@@ -22,8 +22,8 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block font-semibold mb-1">Teléfono</label>
-                        <input type="text" name="telefono" value="{{ old('telefono', $cliente->telefono) }}" class="w-full border rounded p-2">
+                        <label class="block font-semibold mb-1">Celular</label>
+                        <input type="tel" inputmode="numeric" name="telefono" placeholder="Ej: 71234567 (8 dígitos, empieza con 5, 6 o 7)" value="{{ old('telefono', $cliente->telefono) }}" class="w-full border rounded p-2">
                         @error('telefono')
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror

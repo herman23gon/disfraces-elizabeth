@@ -16,7 +16,7 @@
                 @endif
 
                 @can('alquileres.crear')
-                <a href="{{ route('alquileres.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
+                <a href="{{ route('alquileres.create') }}" class="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition mb-4 inline-block">
                     + Nuevo Alquiler
                 </a>
                 @endcan

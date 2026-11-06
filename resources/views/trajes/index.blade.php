@@ -38,7 +38,10 @@
                     <div class="flex flex-wrap gap-2 text-sm">
                         <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">{{ $trajes->count() }} trajes</span>
                         <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">{{ $trajes->sum('cantidad_total') }} unidades</span>
-                        <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-800">{{ $trajes->sum('cantidad_total') - $trajes->sum('cantidad_disponible') }} alquiladas</span>
+                        <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-800">{{ $trajes->sum('cantidad_total') - $trajes->sum('cantidad_disponible') - $trajes->sum('cantidad_reparacion') }} alquiladas</span>
+                        @if ($trajes->sum('cantidad_reparacion') > 0)
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-800">{{ $trajes->sum('cantidad_reparacion') }} en reparación</span>
+                        @endif
                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800">{{ $trajes->sum('cantidad_disponible') }} disponibles</span>
                     </div>
                 </div>
@@ -75,6 +78,7 @@
                                 <th class="p-2 text-center">Talla</th>
                                 <th class="p-2 text-center">Total</th>
                                 <th class="p-2 text-center">Alquilados</th>
+                                <th class="p-2 text-center">Reparación</th>
                                 <th class="p-2 text-center">Disponibles</th>
                                 <th class="p-2 text-right">Precio</th>
                                 <th class="p-2 text-center">Estado</th>
@@ -84,7 +88,7 @@
                         @forelse ($trajes->groupBy(fn ($t) => $t->categoria->nombre) as $nombreCategoria => $grupo)
                             <tbody>
                                 <tr class="bg-gray-100 border-t-2 border-gray-200">
-                                    <td colspan="8" class="px-2 py-1.5 font-semibold text-gray-700">
+                                    <td colspan="9" class="px-2 py-1.5 font-semibold text-gray-700">
                                         {{ $nombreCategoria }}
                                         <span class="font-normal text-gray-500 text-xs">· {{ $grupo->count() }} trajes · {{ $grupo->sum('cantidad_total') }} unidades</span>
                                         @unless ($grupo->first()->categoria->estado)
@@ -112,7 +116,8 @@
                                         </td>
                                         <td class="p-2 text-center uppercase">{{ $traje->talla ?: '—' }}</td>
                                         <td class="p-2 text-center">{{ $traje->cantidad_total }}</td>
-                                        <td class="p-2 text-center">{{ $traje->cantidad_total - $traje->cantidad_disponible }}</td>
+                                        <td class="p-2 text-center">{{ $traje->cantidad_total - $traje->cantidad_disponible - $traje->cantidad_reparacion }}</td>
+                                        <td class="p-2 text-center {{ $traje->cantidad_reparacion > 0 ? 'text-red-600 font-semibold' : 'text-gray-400' }}">{{ $traje->cantidad_reparacion }}</td>
                                         <td class="p-2 text-center font-semibold {{ $traje->cantidad_disponible > 0 ? 'text-green-700' : 'text-red-600' }}">{{ $traje->cantidad_disponible }}</td>
                                         <td class="p-2 text-right whitespace-nowrap">Bs. {{ number_format($traje->precio_referencia, 2) }}</td>
                                         <td class="p-2 text-center whitespace-nowrap">
@@ -143,7 +148,7 @@
                         @empty
                             <tbody>
                                 <tr>
-                                    <td colspan="8" class="p-6 text-center text-gray-500">No se encontraron trajes con esos filtros.</td>
+                                    <td colspan="9" class="p-6 text-center text-gray-500">No se encontraron trajes con esos filtros.</td>
                                 </tr>
                             </tbody>
                         @endforelse

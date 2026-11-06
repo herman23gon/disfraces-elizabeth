@@ -30,7 +30,7 @@ class Cliente extends Model
      */
     public function whatsappUrl(?string $mensaje = null): string
     {
-        $mensaje ??= "Hola {$this->primer_nombre}, le saludamos de Disfraces Elizabeth.";
+        $mensaje ??= "Hola {$this->primer_nombre}, le saludamos de " . config('negocio.nombre') . ".";
 
         return 'https://wa.me/591' . $this->telefono . '?text=' . rawurlencode($mensaje);
     }
@@ -43,7 +43,7 @@ class Cliente extends Model
         $fecha = $alquiler->fecha_devolucion_programada_formateada;
         $vencido = \Carbon\Carbon::parse($alquiler->fecha_devolucion_programada)->lt(today());
 
-        return "Hola {$this->primer_nombre}, le saludamos de Disfraces Elizabeth. "
+        return "Hola {$this->primer_nombre}, le saludamos de " . config('negocio.nombre') . ". "
             . ($vencido
                 ? "Le recordamos que el alquiler con recibo {$alquiler->numero_recibo} debía devolverse el {$fecha}. Por favor, acérquese a devolverlo a la brevedad. ¡Gracias!"
                 : "Le recordamos que la fecha de devolución del alquiler con recibo {$alquiler->numero_recibo} es el {$fecha}. ¡Gracias!");

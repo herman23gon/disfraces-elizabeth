@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('negocio.nombre') }}</title>
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -27,7 +28,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <span class="font-semibold">Disfraces Elizabeth</span>
+                    <span class="font-semibold">{{ config('negocio.nombre') }}</span>
                     <span class="w-10"></span>
                 </div>
 

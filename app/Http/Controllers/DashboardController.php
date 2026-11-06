@@ -10,13 +10,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $hoy = now()->toDateString();
-
-        $alquileresActivos = Alquiler::where('estado', 'activo')->count();
+        $alquileresActivos = Alquiler::pendientes()->count();
 
         $vencidos = Alquiler::with('cliente')
-            ->where('estado', 'activo')
-            ->whereDate('fecha_devolucion_programada', '<', $hoy)
+            ->vencidos()
             ->orderBy('fecha_devolucion_programada', 'asc')
             ->get();
 

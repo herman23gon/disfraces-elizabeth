@@ -46,6 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::get('trajes/pdf', [TrajeController::class, 'pdf'])->name('trajes.pdf');
     Route::resource('trajes', TrajeController::class);
     Route::post('trajes/{traje}/baja', [TrajeController::class, 'baja'])->name('trajes.baja');
+    Route::post('trajes/{traje}/reparacion', [TrajeController::class, 'enviarReparacion'])->name('trajes.reparacion');
+    Route::post('reparaciones/{reparacion}/reparado', [TrajeController::class, 'reparado'])->name('reparaciones.reparado');
+    Route::post('reparaciones/{reparacion}/baja', [TrajeController::class, 'bajaReparacion'])->name('reparaciones.baja');
     Route::get('/alquileres/{id}/recibo', [AlquilerController::class, 'recibo'])->middleware('permission:alquileres.ver')->name('alquileres.recibo');
     Route::get('/alquileres/{id}/devolucion', [DevolucionController::class, 'create'])->middleware('permission:devoluciones.crear')->name('devoluciones.create');
     Route::post('/alquileres/{id}/devolucion', [DevolucionController::class, 'store'])->middleware('permission:devoluciones.crear')->name('devoluciones.store');

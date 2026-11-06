@@ -15,7 +15,7 @@
             @endif
 
             <!-- Resumen de stock -->
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-gray-400">
                     <p class="text-xs text-gray-500">Total en tienda</p>
                     <p class="text-2xl font-bold text-gray-800">{{ $traje->cantidad_total }}</p>
@@ -23,6 +23,10 @@
                 <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-orange-400">
                     <p class="text-xs text-gray-500">Alquilados ahora</p>
                     <p class="text-2xl font-bold text-orange-600">{{ $alquilados }}</p>
+                </div>
+                <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-red-500">
+                    <p class="text-xs text-gray-500">En reparación</p>
+                    <p class="text-2xl font-bold text-red-600">{{ $traje->cantidad_reparacion }}</p>
                 </div>
                 <div class="bg-white shadow-sm rounded-lg p-4 border-l-4 border-green-600">
                     <p class="text-xs text-gray-500">Disponibles</p>
@@ -78,7 +82,7 @@
 
                     <div class="mb-4">
                         <label class="block font-semibold mb-1">Cantidad total</label>
-                        <input type="number" name="cantidad_total" min="{{ $alquilados }}" value="{{ old('cantidad_total', $traje->cantidad_total) }}" class="w-full border rounded p-2">
+                        <input type="number" name="cantidad_total" min="{{ $alquilados + $traje->cantidad_reparacion }}" value="{{ old('cantidad_total', $traje->cantidad_total) }}" class="w-full border rounded p-2">
                         <p class="text-gray-500 text-xs mt-1">
                             Unidades que tiene la tienda. Súbalo si compró más; el disponible se recalcula solo.
                             Para unidades dañadas o perdidas use <strong>Dar de baja</strong> (queda registrado el motivo).
@@ -119,6 +123,81 @@
                     <a href="{{ route('trajes.index') }}" class="ml-2 text-gray-600">Cancelar</a>
                 </form>
 
+            </div>
+
+            <!-- Reparación -->
+            @php $abiertas = $traje->reparaciones->where('estado', 'en_reparacion'); @endphp
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="font-semibold text-gray-800 mb-1">Reparación</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Unidades con el traje principal dañado. No se alquilan hasta marcarlas como reparadas.
+                    Llegan aquí desde la devolución ("Enviar a reparación") o se envían manualmente.
+                </p>
+
+                @if ($abiertas->isNotEmpty())
+                    <table class="w-full border text-sm mb-4">
+                        <thead class="bg-red-50 text-red-900">
+                            <tr>
+                                <th class="p-2 text-left">Desde</th>
+                                <th class="p-2 text-left">Cant.</th>
+                                <th class="p-2 text-left">Motivo</th>
+                                <th class="p-2 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($abiertas as $reparacion)
+                                <tr class="border-t align-top">
+                                    <td class="p-2 whitespace-nowrap">
+                                        {{ $reparacion->created_at->format('d/m/Y') }}
+                                        <div class="text-xs text-gray-500">{{ $reparacion->created_at->diffForHumans() }}</div>
+                                    </td>
+                                    <td class="p-2">{{ $reparacion->cantidad }}</td>
+                                    <td class="p-2">{{ $reparacion->motivo }}</td>
+                                    <td class="p-2 text-right whitespace-nowrap">
+                                        <form action="{{ route('reparaciones.reparado', $reparacion->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold">Reparado</button>
+                                        </form>
+                                        <form action="{{ route('reparaciones.baja', $reparacion->id) }}" method="POST" class="inline"
+                                              onsubmit="return confirm('¿Dar de baja esta unidad? Se descontará del total.')">
+                                            @csrf
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold ml-1">Sin arreglo: dar de baja</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-sm text-gray-500 mb-4">No hay unidades en reparación.</p>
+                @endif
+
+                @if ($traje->cantidad_disponible > 0)
+                    <details class="text-sm">
+                        <summary class="cursor-pointer text-red-700 font-semibold">Enviar una unidad disponible a reparación</summary>
+                        <form action="{{ route('trajes.reparacion', $traje->id) }}" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-3 items-start">
+                            @csrf
+                            <input type="number" name="cantidad" min="1" max="{{ $traje->cantidad_disponible }}" value="1" class="border rounded p-2" title="Cantidad">
+                            <input type="text" name="motivo" placeholder="¿Qué tiene? (ej: cierre roto)" class="sm:col-span-2 border rounded p-2" required>
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Enviar a reparación</button>
+                        </form>
+                    </details>
+                @endif
+
+                @php $resueltas = $traje->reparaciones->where('estado', '!=', 'en_reparacion'); @endphp
+                @if ($resueltas->isNotEmpty())
+                    <h4 class="font-semibold text-sm text-gray-700 mt-6 mb-2">Historial de reparaciones</h4>
+                    <table class="w-full border text-sm text-gray-600">
+                        @foreach ($resueltas as $reparacion)
+                            <tr class="border-t">
+                                <td class="p-2 whitespace-nowrap">{{ $reparacion->created_at->format('d/m/Y') }} → {{ $reparacion->fecha_resolucion?->format('d/m/Y') }}</td>
+                                <td class="p-2">{{ $reparacion->cantidad }}</td>
+                                <td class="p-2">{{ $reparacion->motivo }}</td>
+                                <td class="p-2">{{ $reparacion->estado === 'reparado' ? 'Reparado' : 'Dado de baja' }}</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                @endif
             </div>
 
             <!-- Dar de baja -->

@@ -15,19 +15,19 @@
                     <a href="{{ route('reportes.alquileres-periodo') }}" class="block border rounded p-4 hover:bg-gray-50">
                         <div class="text-2xl mb-2">📋</div>
                         <div class="font-semibold">Alquileres por Período</div>
-                        <div class="text-sm text-gray-500">Consultar alquileres entre dos fechas</div>
+                        <div class="text-sm text-gray-500">Por fechas, cliente, colegio, estado y tipo</div>
                     </a>
 
                     <a href="{{ route('reportes.ingresos-mensuales') }}" class="block border rounded p-4 hover:bg-gray-50">
                         <div class="text-2xl mb-2">💰</div>
                         <div class="font-semibold">Ingresos Mensuales</div>
-                        <div class="text-sm text-gray-500">Control de caja: efectivo vs QR, por día</div>
+                        <div class="text-sm text-gray-500">Control de caja, garantías y comparación</div>
                     </a>
 
                     <a href="{{ route('reportes.vencidos') }}" class="block border rounded p-4 hover:bg-gray-50">
                         <div class="text-2xl mb-2">⚠️</div>
-                        <div class="font-semibold">Alquileres Vencidos</div>
-                        <div class="text-sm text-gray-500">Prendas pendientes de devolución</div>
+                        <div class="font-semibold">Pendientes de Devolución</div>
+                        <div class="text-sm text-gray-500">Vencidos, por vencer y recargo sugerido</div>
                     </a>
                 </div>
 

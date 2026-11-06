@@ -31,13 +31,13 @@
 <body>
 
 <header>
-    <div class="titulo">Disfraces Elizabeth</div>
+    <div class="titulo">{{ config('negocio.nombre') }}</div>
     <div class="sub">Lista de categorías</div>
     <div class="fecha">Generado: {{ now()->format('d/m/Y H:i') }}<br>Por: {{ auth()->user()->name }}</div>
 </header>
 
 <footer>
-    Tienda de Trajes Típicos y Disfraces Elizabeth
+    {{ config('negocio.nombre') }} · {{ config('negocio.direccion') }}
     <span class="pagina"></span>
 </footer>
 

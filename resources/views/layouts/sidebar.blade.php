@@ -14,8 +14,8 @@
     <!-- Logo -->
     <div class="flex items-center justify-between h-16 px-5 border-b border-green-800">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-            <x-application-logo class="h-8 w-auto fill-current text-green-300" />
-            <span class="font-bold leading-tight">Disfraces<br><span class="text-green-300 text-sm font-semibold">Elizabeth</span></span>
+            <x-application-logo variante="claro" class="h-9 w-auto shrink-0" />
+            <span class="font-bold leading-tight">{{ config('negocio.nombre') }}</span>
         </a>
         <button @click="sidebarOpen = false" class="lg:hidden p-1 rounded hover:bg-green-800" aria-label="Cerrar menú">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

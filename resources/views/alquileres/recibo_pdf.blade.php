@@ -46,10 +46,10 @@
 <body>
 
     <div class="center">
-        <div class="header-title">DISFRACES "ELIZABETH"</div>
-        <div class="sub">Alquiler de Trajes Típicos y Disfraces</div>
-        <div class="sub">Av. El Mechero, 3 cuadras de la Rotonda</div>
-        <div class="sub">Santa Cruz de la Sierra - Bolivia</div>
+        <div class="header-title">{{ mb_strtoupper(config('negocio.nombre')) }}</div>
+        <div class="sub">{{ config('negocio.eslogan') }}</div>
+        <div class="sub">{{ config('negocio.direccion') }}</div>
+        <div class="sub">{{ config('negocio.ciudad') }}</div>
     </div>
 
     <div class="double-line"></div>
@@ -73,14 +73,23 @@
     <div class="line"></div>
 
     <table class="info-table">
+        @if($alquiler->esGrupal())
+        <tr>
+            <td class="label">Tipo:</td>
+            <td class="value">Curso / grupo ({{ $alquiler->detalles->count() }} personas)</td>
+        </tr>
+        @else
         <tr>
             <td class="label">Usa el traje:</td>
             <td class="value">{{ $alquiler->nombre_usuario_traje ?? '-' }}</td>
         </tr>
+        @endif
+        @if($alquiler->estado_traje_entrega)
         <tr>
             <td class="label">Estado traje:</td>
-            <td class="value">{{ $alquiler->estado_traje_entrega ?? '-' }}</td>
+            <td class="value">{{ $alquiler->estado_traje_entrega }}</td>
         </tr>
+        @endif
         <tr>
             <td class="label">Colegio/Dirección:</td>
             <td class="value">{{ $alquiler->colegio_direccion ?? '-' }}</td>
@@ -113,7 +122,11 @@
         <tbody>
             @foreach ($alquiler->detalles as $detalle)
             <tr>
-                <td>{{ $detalle->traje->nombre }} (x{{ $detalle->cantidad }})</td>
+                <td>
+                    @if($alquiler->esGrupal() && $detalle->persona)<span class="bold">{{ $detalle->persona }}</span><br>@endif
+                    {{ $detalle->traje->nombre }}{{ $detalle->traje->talla ? ' ' . strtoupper($detalle->traje->talla) : '' }} (x{{ $detalle->cantidad }})
+                    @if($detalle->estado_salida)<br><span class="sub">Estado: {{ $detalle->estado_salida }}</span>@endif
+                </td>
                 <td style="text-align:center;">{{ $detalle->cantidad_piezas }}</td>
                 <td style="text-align:right;">{{ number_format($detalle->subtotal, 2) }}</td>
             </tr>
@@ -149,7 +162,10 @@
         <tbody>
             @foreach ($alquiler->garantias as $garantia)
             <tr>
-                <td>{{ $garantia->tipo_garantia }}</td>
+                <td>
+                    {{ $garantia->tipo_garantia }}{{ $garantia->descripcion ? ' (' . $garantia->descripcion . ')' : '' }}
+                    @if($alquiler->esGrupal())<br><span class="sub">{{ $garantia->detalle?->persona ?? 'Del grupo' }}</span>@endif
+                </td>
                 <td style="text-align:center;">{{ $garantia->cantidad }}</td>
                 <td style="text-align:right;">{{ $garantia->monto ? number_format($garantia->monto, 2) : '-' }}</td>
             </tr>

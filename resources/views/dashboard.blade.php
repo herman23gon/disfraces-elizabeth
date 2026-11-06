@@ -5,7 +5,7 @@
             <!-- Saludo -->
             <div>
                 <h1 class="text-2xl font-bold text-green-900">Bienvenido, {{ auth()->user()->name }}</h1>
-                <p class="text-green-700">Tienda de Trajes Típicos y Disfraces Elizabeth</p>
+                <p class="text-green-700">{{ config('negocio.nombre') }} · {{ config('negocio.eslogan') }}</p>
             </div>
 
             <!-- Tarjetas de estadísticas -->

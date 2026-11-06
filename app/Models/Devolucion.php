@@ -25,6 +25,14 @@ class Devolucion extends Model
         return $this->belongsTo(Alquiler::class);
     }
 
+    /**
+     * Trajes devueltos en esta devolución
+     */
+    public function detalles()
+    {
+        return $this->hasMany(DetalleAlquiler::class);
+    }
+
     public function usuario()
     {
         return $this->belongsTo(User::class);

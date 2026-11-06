@@ -7,6 +7,7 @@ use App\Helpers\RegistrarBitacora;
 use App\Models\Traje;
 use App\Models\Categoria;
 use App\Models\TrajeBaja;
+use App\Models\TrajeReparacion;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -16,7 +17,7 @@ class TrajeController extends Controller
     {
         $this->middleware('permission:trajes.ver')->only(['index', 'show', 'pdf']);
         $this->middleware('permission:trajes.crear')->only(['create', 'store']);
-        $this->middleware('permission:trajes.editar')->only(['edit', 'update', 'baja']);
+        $this->middleware('permission:trajes.editar')->only(['edit', 'update', 'baja', 'enviarReparacion', 'reparado', 'bajaReparacion']);
         $this->middleware('permission:trajes.eliminar')->only(['destroy']);
     }
 
@@ -119,7 +120,7 @@ class TrajeController extends Controller
      */
     public function edit(string $id)
     {
-        $traje = Traje::with(['bajas.user'])->findOrFail($id);
+        $traje = Traje::with(['bajas.user', 'reparaciones' => fn ($q) => $q->latest(), 'reparaciones.user', 'reparaciones.resolvio'])->findOrFail($id);
         // Incluye la categoría actual del traje aunque esté inactiva, para no cambiarla sin querer al guardar
         $categorias = Categoria::where('estado', true)->orWhere('id', $traje->categoria_id)->get();
         $alquilados = $traje->cantidadAlquilada();
@@ -135,6 +136,7 @@ class TrajeController extends Controller
     {
         $traje = Traje::findOrFail($id);
         $alquilados = $traje->cantidadAlquilada();
+        $ocupados = $alquilados + $traje->cantidad_reparacion;
 
         $request->validate([
             'categoria_id' => 'required|exists:categorias,id',
@@ -142,17 +144,17 @@ class TrajeController extends Controller
             'talla' => 'nullable|string|max:50',
             'cantidad_piezas' => 'required|integer|min:1',
             'descripcion' => 'nullable|string',
-            // No puede tener menos unidades que las que están alquiladas ahora
-            'cantidad_total' => 'required|integer|min:' . $alquilados,
+            // No puede tener menos unidades que las alquiladas y en reparación
+            'cantidad_total' => 'required|integer|min:' . $ocupados,
             'precio_referencia' => 'required|numeric|min:0',
             'estado' => 'required|boolean',
         ], [
-            'cantidad_total.min' => 'Hay ' . $alquilados . ' unidad(es) alquilada(s); la cantidad total no puede ser menor. Para unidades dañadas o perdidas use "Dar de baja".',
+            'cantidad_total.min' => 'Hay ' . $alquilados . ' unidad(es) alquilada(s) y ' . $traje->cantidad_reparacion . ' en reparación; la cantidad total no puede ser menor que ' . $ocupados . '. Para unidades dañadas o perdidas use "Dar de baja".',
         ]);
 
-        // El disponible se calcula siempre: total - alquilados (no se escribe a mano)
+        // El disponible se calcula siempre: total - alquilados - en reparación (no se escribe a mano)
         $traje->update($request->only('categoria_id', 'nombre', 'talla', 'cantidad_piezas', 'descripcion', 'cantidad_total', 'precio_referencia', 'estado')
-            + ['cantidad_disponible' => $request->cantidad_total - $alquilados]);
+            + ['cantidad_disponible' => $request->cantidad_total - $ocupados]);
 
         RegistrarBitacora::registrar('Editar', 'Trajes', 'Traje actualizado: ' . $traje->nombre . ' (total ' . $traje->cantidad_total . ', ' . ($traje->estado ? 'activo' : 'inactivo') . ')');
 
@@ -188,6 +190,79 @@ class TrajeController extends Controller
         RegistrarBitacora::registrar('Baja', 'Trajes', $request->cantidad . ' unidad(es) de ' . $traje->nombre . ' dada(s) de baja. Motivo: ' . $request->motivo . ($request->observacion ? ' - ' . $request->observacion : ''));
 
         return redirect()->route('trajes.edit', $traje->id)->with('success', 'Se dio de baja ' . $request->cantidad . ' unidad(es) de ' . $traje->nombre . '.');
+    }
+
+    /**
+     * Enviar a reparación unidades disponibles (ej: se encontró un daño revisando en la tienda)
+     */
+    public function enviarReparacion(Request $request, Traje $traje)
+    {
+        $request->validate([
+            'cantidad' => 'required|integer|min:1|max:' . $traje->cantidad_disponible,
+            'motivo' => 'required|string|max:255',
+        ], [
+            'cantidad.max' => 'Solo hay ' . $traje->cantidad_disponible . ' unidad(es) disponible(s).',
+            'motivo.required' => 'Indique qué tiene el traje.',
+        ]);
+
+        DB::transaction(function () use ($request, $traje) {
+            $traje->reparaciones()->create([
+                'user_id' => auth()->id(),
+                'cantidad' => $request->cantidad,
+                'motivo' => $request->motivo,
+            ]);
+
+            $traje->decrement('cantidad_disponible', $request->cantidad);
+            $traje->increment('cantidad_reparacion', $request->cantidad);
+        });
+
+        RegistrarBitacora::registrar('Reparación', 'Trajes', $request->cantidad . ' unidad(es) de ' . $traje->nombre . ' enviada(s) a reparación: ' . $request->motivo);
+
+        return redirect()->route('trajes.edit', $traje->id)->with('success', 'Se envió a reparación ' . $request->cantidad . ' unidad(es) de ' . $traje->nombre . '.');
+    }
+
+    /**
+     * La unidad quedó reparada: vuelve a estar disponible para alquilar
+     */
+    public function reparado(TrajeReparacion $reparacion)
+    {
+        abort_unless($reparacion->estado === 'en_reparacion', 404);
+
+        DB::transaction(function () use ($reparacion) {
+            $reparacion->update(['estado' => 'reparado', 'resuelto_por' => auth()->id(), 'fecha_resolucion' => now()]);
+            $reparacion->traje->decrement('cantidad_reparacion', $reparacion->cantidad);
+            $reparacion->traje->increment('cantidad_disponible', $reparacion->cantidad);
+        });
+
+        RegistrarBitacora::registrar('Reparación', 'Trajes', $reparacion->cantidad . ' unidad(es) de ' . $reparacion->traje->nombre . ' reparada(s), vuelven a disponible. Motivo: ' . $reparacion->motivo);
+
+        return redirect()->route('trajes.edit', $reparacion->traje_id)->with('success', 'Unidad marcada como reparada: ya está disponible para alquilar.');
+    }
+
+    /**
+     * La unidad no tiene arreglo: se da de baja (se descuenta del total)
+     */
+    public function bajaReparacion(TrajeReparacion $reparacion)
+    {
+        abort_unless($reparacion->estado === 'en_reparacion', 404);
+
+        DB::transaction(function () use ($reparacion) {
+            $reparacion->update(['estado' => 'baja', 'resuelto_por' => auth()->id(), 'fecha_resolucion' => now()]);
+
+            $reparacion->traje->bajas()->create([
+                'user_id' => auth()->id(),
+                'cantidad' => $reparacion->cantidad,
+                'motivo' => 'Dañado',
+                'observacion' => 'Sin arreglo tras reparación: ' . $reparacion->motivo,
+            ]);
+
+            $reparacion->traje->decrement('cantidad_reparacion', $reparacion->cantidad);
+            $reparacion->traje->decrement('cantidad_total', $reparacion->cantidad);
+        });
+
+        RegistrarBitacora::registrar('Baja', 'Trajes', $reparacion->cantidad . ' unidad(es) de ' . $reparacion->traje->nombre . ' dada(s) de baja (sin arreglo). Motivo: ' . $reparacion->motivo);
+
+        return redirect()->route('trajes.edit', $reparacion->traje_id)->with('success', 'Unidad dada de baja.');
     }
 
     /**

@@ -42,13 +42,13 @@
 <body>
 
 <header>
-    <div class="titulo">Disfraces Elizabeth</div>
+    <div class="titulo">{{ config('negocio.nombre') }}</div>
     <div class="sub">Inventario de trajes</div>
     <div class="fecha">Generado: {{ now()->format('d/m/Y H:i') }}<br>Por: {{ auth()->user()->name }}</div>
 </header>
 
 <footer>
-    Tienda de Trajes Típicos y Disfraces Elizabeth
+    {{ config('negocio.nombre') }} · {{ config('negocio.direccion') }}
     <span class="pagina"></span>
 </footer>
 
@@ -64,11 +64,12 @@
 <table>
     <thead>
         <tr>
-            <th style="width: 40%;">Traje / piezas</th>
+            <th style="width: 34%;">Traje / piezas</th>
             <th class="c" style="width: 7%;">Talla</th>
             <th class="c" style="width: 7%;">Piezas</th>
             <th class="c" style="width: 8%;">Total</th>
             <th class="c" style="width: 9%;">Alquilados</th>
+            <th class="c" style="width: 9%;">Reparación</th>
             <th class="c" style="width: 9%;">Disponibles</th>
             <th class="r" style="width: 10%;">Precio ref.</th>
             <th class="c" style="width: 10%;">Estado</th>
@@ -77,7 +78,7 @@
     <tbody>
         @forelse ($grupos as $nombreCategoria => $grupo)
             <tr class="categoria">
-                <td colspan="8">
+                <td colspan="9">
                     {{ $nombreCategoria }}
                     <span class="info">— {{ $grupo->count() }} trajes, {{ $grupo->sum('cantidad_total') }} unidades</span>
                 </td>
@@ -93,7 +94,8 @@
                     <td class="c">{{ strtoupper($traje->talla ?: '—') }}</td>
                     <td class="c">{{ $traje->cantidad_piezas }}</td>
                     <td class="c">{{ $traje->cantidad_total }}</td>
-                    <td class="c">{{ $traje->cantidad_total - $traje->cantidad_disponible }}</td>
+                    <td class="c">{{ $traje->cantidad_total - $traje->cantidad_disponible - $traje->cantidad_reparacion }}</td>
+                    <td class="c {{ $traje->cantidad_reparacion > 0 ? 'cero' : '' }}">{{ $traje->cantidad_reparacion }}</td>
                     <td class="c {{ $traje->cantidad_disponible == 0 ? 'cero' : '' }}">{{ $traje->cantidad_disponible }}</td>
                     <td class="r">Bs. {{ number_format($traje->precio_referencia, 2) }}</td>
                     <td class="c">
@@ -108,7 +110,7 @@
                 </tr>
             @endforeach
         @empty
-            <tr><td colspan="8" class="c">No hay trajes para mostrar.</td></tr>
+            <tr><td colspan="9" class="c">No hay trajes para mostrar.</td></tr>
         @endforelse
     </tbody>
 </table>
@@ -117,7 +119,8 @@
     <tr>
         <td class="lbl">Trajes (modelos)</td><td class="r">{{ $trajes->count() }}</td>
         <td class="lbl">Unidades en total</td><td class="r">{{ $trajes->sum('cantidad_total') }}</td>
-        <td class="lbl">Alquiladas ahora</td><td class="r">{{ $trajes->sum('cantidad_total') - $trajes->sum('cantidad_disponible') }}</td>
+        <td class="lbl">Alquiladas ahora</td><td class="r">{{ $trajes->sum('cantidad_total') - $trajes->sum('cantidad_disponible') - $trajes->sum('cantidad_reparacion') }}</td>
+        <td class="lbl">En reparación</td><td class="r">{{ $trajes->sum('cantidad_reparacion') }}</td>
         <td class="lbl">Disponibles</td><td class="r">{{ $trajes->sum('cantidad_disponible') }}</td>
     </tr>
 </table>

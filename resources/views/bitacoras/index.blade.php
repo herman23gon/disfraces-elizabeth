@@ -73,6 +73,7 @@
                                                 'Eliminar' => 'bg-red-100 text-red-800',
                                                 'Error' => 'bg-red-100 text-red-800',
                                                 'Baja' => 'bg-orange-100 text-orange-800',
+                                                'Reparación' => 'bg-yellow-100 text-yellow-800',
                                                 'Generar' => 'bg-green-100 text-green-800',
                                                 'Habilitar' => 'bg-green-100 text-green-800',
                                                 'Deshabilitar' => 'bg-orange-100 text-orange-800',

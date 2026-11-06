@@ -71,7 +71,7 @@
                             @forelse ($cliente->alquileres as $alquiler)
                                 @php
                                     $fechaDevolucion = \Carbon\Carbon::parse($alquiler->fecha_devolucion_programada);
-                                    $vencido = $alquiler->estado === 'activo' && $fechaDevolucion->lt(today());
+                                    $vencido = $alquiler->estaVencido();
                                     $diasAtraso = $vencido ? $fechaDevolucion->diffInDays(today()) : 0;
                                 @endphp
                                 <tr class="border-t align-top hover:bg-gray-50 {{ $vencido ? 'bg-red-50/40' : '' }}">
@@ -109,14 +109,14 @@
                                     <td class="p-2 text-center whitespace-nowrap">
                                         @if ($vencido)
                                             <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Vencido · {{ $diasAtraso }} día(s)</span>
-                                        @elseif ($alquiler->estado === 'activo')
+                                        @elseif ($alquiler->estaPendiente())
                                             <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">Activo</span>
                                         @else
                                             <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Devuelto</span>
                                         @endif
                                     </td>
                                     <td class="p-2 text-right whitespace-nowrap">
-                                        @if ($alquiler->estado === 'activo')
+                                        @if ($alquiler->estaPendiente())
                                             <a href="{{ $cliente->whatsappUrl($cliente->mensajeRecordatorio($alquiler)) }}" target="_blank" rel="noopener"
                                                class="inline-block bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-semibold">
                                                 Recordar

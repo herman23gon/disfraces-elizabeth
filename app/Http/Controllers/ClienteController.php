@@ -21,21 +21,20 @@ class ClienteController extends Controller
      */
     public function index(Request $request)
     {
-        $hoy = today()->toDateString();
         $soloDigitos = preg_replace('/\D/', '', (string) $request->q);
 
         $clientes = Cliente::query()
             ->withCount('alquileres')
             ->withMax('alquileres as ultimo_alquiler', 'fecha_alquiler')
-            ->withCount(['alquileres as pendientes' => fn ($q) => $q->where('estado', 'activo')])
-            ->withCount(['alquileres as vencidos' => fn ($q) => $q->where('estado', 'activo')->whereDate('fecha_devolucion_programada', '<', $hoy)])
+            ->withCount(['alquileres as pendientes' => fn ($q) => $q->pendientes()])
+            ->withCount(['alquileres as vencidos' => fn ($q) => $q->vencidos()])
             // Para el botón de WhatsApp: el alquiler pendiente más antiguo
-            ->with(['alquileres' => fn ($q) => $q->where('estado', 'activo')->orderBy('fecha_devolucion_programada')])
+            ->with(['alquileres' => fn ($q) => $q->pendientes()->orderBy('fecha_devolucion_programada')])
             ->when($request->q, fn ($q) => $q->where(fn ($w) => $w
                 ->where('nombre', 'like', '%' . $request->q . '%')
                 ->when($soloDigitos !== '', fn ($w) => $w->orWhere('telefono', 'like', '%' . $soloDigitos . '%'))))
-            ->when($request->filtro === 'pendientes', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->where('estado', 'activo')))
-            ->when($request->filtro === 'vencidos', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->where('estado', 'activo')->whereDate('fecha_devolucion_programada', '<', $hoy)))
+            ->when($request->filtro === 'pendientes', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->pendientes()))
+            ->when($request->filtro === 'vencidos', fn ($q) => $q->whereHas('alquileres', fn ($a) => $a->vencidos()))
             // Primero los que tienen alquileres vencidos, luego los que tienen pendientes, luego por nombre
             ->orderByDesc('vencidos')
             ->orderByDesc('pendientes')
@@ -87,12 +86,12 @@ class ClienteController extends Controller
             'alquileres.devolucion',
         ])->findOrFail($id);
 
-        $activos = $cliente->alquileres->where('estado', 'activo');
+        $activos = $cliente->alquileres->filter->estaPendiente();
 
         $resumen = [
             'total' => $cliente->alquileres->count(),
             'activos' => $activos->count(),
-            'vencidos' => $activos->filter(fn ($a) => \Carbon\Carbon::parse($a->fecha_devolucion_programada)->lt(today()))->count(),
+            'vencidos' => $activos->filter->estaVencido()->count(),
             // Garantías que la tienda tiene en su poder (aún no devueltas)
             'garantia_retenida' => $cliente->alquileres->flatMap->garantias->where('estado', 'entregada')->sum('monto'),
             'documentos_retenidos' => $cliente->alquileres->flatMap->garantias->where('estado', 'entregada')->whereNull('monto')->pluck('tipo_garantia'),

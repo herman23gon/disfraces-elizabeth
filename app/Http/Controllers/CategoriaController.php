@@ -122,7 +122,7 @@ class CategoriaController extends Controller
 
             // Avisar si hay trajes de esta categoría alquilados ahora
             $alquilados = DetalleAlquiler::whereHas('traje', fn ($q) => $q->where('categoria_id', $categoria->id))
-                ->whereHas('alquiler', fn ($q) => $q->where('estado', 'activo'))
+                ->pendientes()
                 ->sum('cantidad');
 
             if ($alquilados > 0) {

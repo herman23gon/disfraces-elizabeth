@@ -17,6 +17,7 @@ class Traje extends Model
         'cantidad_total',
         'descripcion',
         'cantidad_disponible',
+        'cantidad_reparacion',
         'precio_referencia',
         'estado',
     ];
@@ -40,14 +41,18 @@ class Traje extends Model
         return $this->hasMany(TrajeBaja::class);
     }
 
+    public function reparaciones()
+    {
+        return $this->hasMany(TrajeReparacion::class);
+    }
+
     /**
      * Unidades que están alquiladas ahora (en alquileres activos)
      */
     public function cantidadAlquilada(): int
     {
-        return (int) $this->detalles()
-            ->whereHas('alquiler', fn ($q) => $q->where('estado', 'activo'))
-            ->sum('cantidad');
+        // Trajes no devueltos de alquileres activos o con devolución parcial
+        return (int) $this->detalles()->pendientes()->sum('cantidad');
     }
 
     /**
